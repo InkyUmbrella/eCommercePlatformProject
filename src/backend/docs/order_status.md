@@ -24,7 +24,7 @@
 | `pending_shipment` -> `pending_receipt` | 管理员/商家 | 发货（后台标记发货） |
 | `pending_shipment` -> `cancelled` | 用户/管理员 | 发货前取消 |
 | `pending_receipt` -> `completed` | 用户/系统 | 用户确认收货（或超时自动确认） |
-| `pending_receipt` -> `cancelled` | 用户/管理员 | 收货前取消（此项目允许） |
+| `pending_receipt` -> `cancelled` | 用户/管理员 | 收货前取消 |
 
 ## 4.Constraint
 - 订单状态变更必须使用统一方法 `Order.change_status(new_status)`

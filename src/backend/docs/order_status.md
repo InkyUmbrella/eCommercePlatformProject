@@ -22,7 +22,7 @@
 | `pending_payment` -> `pending_shipment` | 用户/系统 | 支付成功（模拟支付完成） |
 | `pending_payment` -> `cancelled` | 用户/系统 | 用户取消 / 支付超时自动取消 |
 | `pending_shipment` -> `pending_receipt` | 管理员/商家 | 发货（后台标记发货） |
-| `pending_shipment` -> `cancelled` | 用户/管理员 | 发货前取消（是否允许取决于业务，此项目允许） |
+| `pending_shipment` -> `cancelled` | 用户/管理员 | 发货前取消 |
 | `pending_receipt` -> `completed` | 用户/系统 | 用户确认收货（或超时自动确认） |
 | `pending_receipt` -> `cancelled` | 用户/管理员 | 收货前取消（此项目允许） |
 

@@ -1,0 +1,5 @@
+.postman/
+postman/environments/
+postman/globals/
+
+.vs/

@@ -12,14 +12,14 @@
 ### 2️ 安装步骤
 
 #### 后端 (Django)
-cd backend
-pip install -r requirements.txt  (下载时记得换国内源，不然会很慢)
-python manage.py migrate
+cd backend\
+pip install -r requirements.txt  (下载时记得换国内源，不然会很慢)\
+python manage.py migrate\
 python manage.py createsuperuser   (按提示创建管理员账号)
 
 #### 前端 (Vue3)
-cd ../frontend
-npm install
+cd ../frontend\
+npm install\
 npm run serve  (启动前端)
 ### 3 项目结构
 ````bash

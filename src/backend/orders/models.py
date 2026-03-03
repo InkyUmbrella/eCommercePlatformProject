@@ -1,7 +1,7 @@
 from django.db import models
 from django.contrib.auth.models import User
 
-from user.models import Address
+from users.models import Address
 
 
 class Order(models.Model):
@@ -15,7 +15,7 @@ class Order(models.Model):
 
     user = models.ForeignKey(User, on_delete=models.CASCADE,related_name='orders')
     address = models.ForeignKey(Address, on_delete=models.CASCADE,related_name='orders')
-    status = models.CharField(max_length=20, choices=STATUS_CHOICES, default='Pending payment')
+    status = models.CharField(max_length=20, choices=STATUS_CHOICES, default='pending_payment')
     created_at = models.DateTimeField(auto_now_add=True)
     updated_at = models.DateTimeField(auto_now=True)
 

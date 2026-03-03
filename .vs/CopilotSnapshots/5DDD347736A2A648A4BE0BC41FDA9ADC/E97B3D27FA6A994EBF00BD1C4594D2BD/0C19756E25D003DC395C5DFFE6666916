@@ -1,0 +1,21 @@
+﻿{% extends "admin/base_site.html" %}
+{% load i18n %}
+
+{% block content %}
+<div id="content-main">
+ <div class="app-list">
+ {% for app in app_list %}
+ <div class="app-{{ app.app_label }}">
+ <h2>{{ app.name }}</h2>
+ <ul class="model-list">
+ {% for model in app.models %}
+ <li>
+ <a href="{{ model.admin_url }}">{{ model.name }}</a>
+ </li>
+ {% endfor %}
+ </ul>
+ </div>
+ {% endfor %}
+ </div>
+</div>
+{% endblock %}

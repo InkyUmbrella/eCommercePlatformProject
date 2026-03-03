@@ -1,0 +1,118 @@
+﻿from django.contrib import admin
+from django.utils.html import format_html
+from django.utils.translation import gettext_lazy as _
+from .models import Category, Product, ProductImage
+
+# 设置管理站点中文标题
+admin.site.site_header = '电商后台管理'
+admin.site.site_title = '电商后台'
+admin.site.index_title = '管理面板'
+
+
+class ProductImageInline(admin.TabularInline):
+    model = ProductImage
+    extra = 1
+    readonly_fields = ('created_at',)
+    fields = ('image', 'sort_order', 'created_at')
+
+
+class CategoryHierarchyFilter(admin.SimpleListFilter):
+    # 改为以“按”开头的标题
+    title = _('按所属分类')
+    parameter_name = 'category_hier'
+
+    def lookups(self, request, model_admin):
+        # 返回 (id, label) 列表，label 显示父级路径
+        qs = Category.objects.all()
+        choices = []
+        for c in qs:
+            ancestors = [a.name for a in c.get_ancestors()]
+            label = ' / '.join(ancestors + [c.name]) if ancestors else c.name
+            choices.append((str(c.id), label))
+        # 排序展示，按 label
+        choices.sort(key=lambda x: x[1])
+        return choices
+
+    def queryset(self, request, queryset):
+        if not self.value():
+            return queryset
+        try:
+            cat = Category.objects.get(pk=int(self.value()))
+        except (Category.DoesNotExist, ValueError):
+            return queryset
+        # 包含所选分类及其所有后代
+        ids = [cat.id]
+        descendants = cat.get_descendants()
+        ids.extend([d.id for d in descendants])
+        return queryset.filter(category__in=ids)
+
+
+class ActiveFilter(admin.SimpleListFilter):
+    # 改为以“按”开头的标题
+    title = _('按上架')
+    parameter_name = 'is_active'
+
+    def lookups(self, request, model_admin):
+        return (('1', _('是')), ('0', _('否')))
+
+    def queryset(self, request, queryset):
+        if self.value() == '1':
+            return queryset.filter(is_active=True)
+        if self.value() == '0':
+            return queryset.filter(is_active=False)
+        return queryset
+
+
+@admin.register(Category)
+class CategoryAdmin(admin.ModelAdmin):
+    list_display = ('id', 'name', 'parent', 'sort_order', 'created_at')
+    list_filter = ('parent',)
+    search_fields = ('name',)
+    # 显示父子层级中的名称
+    def get_queryset(self, request):
+        qs = super().get_queryset(request)
+        return qs.select_related('parent')
+
+    def get_form(self, request, obj=None, **kwargs):
+        # 在编辑时，从 parent 下拉中排除自身及其所有后代，避免错误设置造成环或重复显示
+        form = super().get_form(request, obj, **kwargs)
+        try:
+            parent_field = form.base_fields['parent']
+        except Exception:
+            return form
+        if obj is not None and obj.pk is not None:
+            exclude_ids = [obj.pk] + [d.pk for d in obj.get_descendants()]
+            parent_qs = Category.objects.exclude(pk__in=exclude_ids)
+            # 还应排除那些与 obj 同名且未被合并的同名节点，以避免重复显示
+            parent_qs = parent_qs.exclude(name=obj.name)
+            parent_field.queryset = parent_qs
+        else:
+            parent_field.queryset = Category.objects.all()
+        return form
+
+
+@admin.register(Product)
+class ProductAdmin(admin.ModelAdmin):
+    inlines = (ProductImageInline,)
+    list_display = ('id', 'name', 'category', 'price', 'stock', 'is_active', 'created_at')
+    list_display_links = ('name',)
+    list_editable = ('stock', 'is_active')
+    list_filter = (CategoryHierarchyFilter, ActiveFilter)
+    search_fields = ('name', 'description')
+    readonly_fields = ('created_at', 'updated_at')
+    date_hierarchy = 'created_at'
+    list_select_related = ('category',)
+
+
+@admin.register(ProductImage)
+class ProductImageAdmin(admin.ModelAdmin):
+    list_display = ('id', 'product', 'image_tag', 'sort_order', 'created_at')
+    list_filter = ('product',)
+    readonly_fields = ('image_tag', 'created_at')
+
+    def image_tag(self, obj):
+        if obj.image and hasattr(obj.image, 'url'):
+            return format_html('<img src="{}" style="max-height:60px;"/>', obj.image.url)
+        return '-'
+
+    image_tag.short_description = '预览'

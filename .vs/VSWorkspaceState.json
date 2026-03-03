@@ -1,0 +1,13 @@
+{
+  "ExpandedNodes": [
+    "",
+    "\\src",
+    "\\src\\backend",
+    "\\src\\backend\\backendCore",
+    "\\src\\backend\\products",
+    "\\src\\backend\\products\\management",
+    "\\src\\backend\\products\\management\\commands"
+  ],
+  "SelectedNode": "\\src\\backend\\products\\admin.py",
+  "PreviewInSolutionExplorer": false
+}

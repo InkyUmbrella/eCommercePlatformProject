@@ -64,29 +64,11 @@
       "DocumentGroups": [
         {
           "DockedWidth": 200,
-          "SelectedChildIndex": 14,
+          "SelectedChildIndex": 7,
           "Children": [
             {
-              "$type": "Document",
-              "DocumentIndex": 14,
-              "Title": "index.html",
-              "DocumentMoniker": "C:\\Users\\Lenovo\\AppData\\Local\\Temp\\CopilotBaseline\\Deleted\\1459111381\\index.html",
-              "ToolTip": "C:\\Users\\Lenovo\\AppData\\Local\\Temp\\CopilotBaseline\\Deleted\\1459111381\\index.html",
-              "ViewState": "AgIAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAA==",
-              "Icon": "ae27a6b0-e345-4288-96df-5eaf394ee369.001512|",
-              "WhenOpened": "2026-03-03T12:57:47.759Z",
-              "EditorCaption": ""
-            },
-            {
-              "$type": "Document",
-              "DocumentIndex": 13,
-              "Title": "change_form.html",
-              "DocumentMoniker": "C:\\Users\\Lenovo\\AppData\\Local\\Temp\\CopilotBaseline\\Deleted\\2073370662\\change_form.html",
-              "ToolTip": "C:\\Users\\Lenovo\\AppData\\Local\\Temp\\CopilotBaseline\\Deleted\\2073370662\\change_form.html",
-              "ViewState": "AgIAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAA==",
-              "Icon": "ae27a6b0-e345-4288-96df-5eaf394ee369.001512|",
-              "WhenOpened": "2026-03-03T12:57:47.719Z",
-              "EditorCaption": ""
+              "$type": "Bookmark",
+              "Name": "ST:0:0:{1c4feeaa-4718-4aa9-859d-94ce25d182ba}"
             },
             {
               "$type": "Document",
@@ -94,10 +76,8 @@
               "Title": "add_form.html",
               "DocumentMoniker": "C:\\Users\\Lenovo\\AppData\\Local\\Temp\\CopilotBaseline\\Deleted\\2073370662\\add_form.html",
               "ToolTip": "C:\\Users\\Lenovo\\AppData\\Local\\Temp\\CopilotBaseline\\Deleted\\2073370662\\add_form.html",
-              "ViewState": "AgIAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAA==",
               "Icon": "ae27a6b0-e345-4288-96df-5eaf394ee369.001512|",
-              "WhenOpened": "2026-03-03T12:57:47.673Z",
-              "EditorCaption": ""
+              "WhenOpened": "2026-03-03T12:57:47.673Z"
             },
             {
               "$type": "Document",
@@ -105,10 +85,8 @@
               "Title": "change_form.html",
               "DocumentMoniker": "C:\\Users\\Lenovo\\AppData\\Local\\Temp\\CopilotBaseline\\Deleted\\1552964668\\change_form.html",
               "ToolTip": "C:\\Users\\Lenovo\\AppData\\Local\\Temp\\CopilotBaseline\\Deleted\\1552964668\\change_form.html",
-              "ViewState": "AgIAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAA==",
               "Icon": "ae27a6b0-e345-4288-96df-5eaf394ee369.001512|",
-              "WhenOpened": "2026-03-03T12:57:47.622Z",
-              "EditorCaption": ""
+              "WhenOpened": "2026-03-03T12:57:47.622Z"
             },
             {
               "$type": "Document",
@@ -116,10 +94,8 @@
               "Title": "add_form.html",
               "DocumentMoniker": "C:\\Users\\Lenovo\\AppData\\Local\\Temp\\CopilotBaseline\\Deleted\\1552964668\\add_form.html",
               "ToolTip": "C:\\Users\\Lenovo\\AppData\\Local\\Temp\\CopilotBaseline\\Deleted\\1552964668\\add_form.html",
-              "ViewState": "AgIAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAA==",
               "Icon": "ae27a6b0-e345-4288-96df-5eaf394ee369.001512|",
-              "WhenOpened": "2026-03-03T12:57:47.583Z",
-              "EditorCaption": ""
+              "WhenOpened": "2026-03-03T12:57:47.583Z"
             },
             {
               "$type": "Document",
@@ -127,10 +103,8 @@
               "Title": "change_form.html",
               "DocumentMoniker": "C:\\Users\\Lenovo\\AppData\\Local\\Temp\\CopilotBaseline\\Deleted\\-1239476827\\change_form.html",
               "ToolTip": "C:\\Users\\Lenovo\\AppData\\Local\\Temp\\CopilotBaseline\\Deleted\\-1239476827\\change_form.html",
-              "ViewState": "AgIAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAA==",
               "Icon": "ae27a6b0-e345-4288-96df-5eaf394ee369.001512|",
-              "WhenOpened": "2026-03-03T12:57:47.541Z",
-              "EditorCaption": ""
+              "WhenOpened": "2026-03-03T12:57:47.541Z"
             },
             {
               "$type": "Document",
@@ -155,86 +129,7 @@
               "RelativeToolTip": "src\\backend\\products\\migrations\\0003_make_slug_unique.py",
               "ViewState": "AgIAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAA==",
               "Icon": "ae27a6b0-e345-4288-96df-5eaf394ee369.002457|",
-              "WhenOpened": "2026-03-03T12:57:47.455Z",
-              "EditorCaption": ""
-            },
-            {
-              "$type": "Document",
-              "DocumentIndex": 6,
-              "Title": "0002_add_slug_nullable.py",
-              "DocumentMoniker": "D:\\VS2022\\eCommercePlatformProject\\src\\backend\\products\\migrations\\0002_add_slug_nullable.py",
-              "RelativeDocumentMoniker": "src\\backend\\products\\migrations\\0002_add_slug_nullable.py",
-              "ToolTip": "D:\\VS2022\\eCommercePlatformProject\\src\\backend\\products\\migrations\\0002_add_slug_nullable.py",
-              "RelativeToolTip": "src\\backend\\products\\migrations\\0002_add_slug_nullable.py",
-              "ViewState": "AgIAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAA==",
-              "Icon": "ae27a6b0-e345-4288-96df-5eaf394ee369.002457|",
-              "WhenOpened": "2026-03-03T12:57:47.403Z",
-              "EditorCaption": ""
-            },
-            {
-              "$type": "Document",
-              "DocumentIndex": 5,
-              "Title": "fix_category_duplicates.py",
-              "DocumentMoniker": "D:\\VS2022\\eCommercePlatformProject\\src\\backend\\products\\management\\commands\\fix_category_duplicates.py",
-              "RelativeDocumentMoniker": "src\\backend\\products\\management\\commands\\fix_category_duplicates.py",
-              "ToolTip": "D:\\VS2022\\eCommercePlatformProject\\src\\backend\\products\\management\\commands\\fix_category_duplicates.py",
-              "RelativeToolTip": "src\\backend\\products\\management\\commands\\fix_category_duplicates.py",
-              "ViewState": "AgIAAAAAAAAAAAAAAAAAADoAAAAAAAAAAAAAAA==",
-              "Icon": "ae27a6b0-e345-4288-96df-5eaf394ee369.002457|",
-              "WhenOpened": "2026-02-28T10:36:04.517Z",
-              "EditorCaption": ""
-            },
-            {
-              "$type": "Document",
-              "DocumentIndex": 4,
-              "Title": "urls.py",
-              "DocumentMoniker": "D:\\VS2022\\eCommercePlatformProject\\src\\backend\\backendCore\\urls.py",
-              "RelativeDocumentMoniker": "src\\backend\\backendCore\\urls.py",
-              "ToolTip": "D:\\VS2022\\eCommercePlatformProject\\src\\backend\\backendCore\\urls.py",
-              "RelativeToolTip": "src\\backend\\backendCore\\urls.py",
-              "ViewState": "AgIAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAA==",
-              "Icon": "ae27a6b0-e345-4288-96df-5eaf394ee369.002457|",
-              "WhenOpened": "2026-02-28T08:11:14.076Z",
-              "EditorCaption": ""
-            },
-            {
-              "$type": "Document",
-              "DocumentIndex": 3,
-              "Title": "apps.py",
-              "DocumentMoniker": "D:\\VS2022\\eCommercePlatformProject\\src\\backend\\products\\apps.py",
-              "RelativeDocumentMoniker": "src\\backend\\products\\apps.py",
-              "ToolTip": "D:\\VS2022\\eCommercePlatformProject\\src\\backend\\products\\apps.py",
-              "RelativeToolTip": "src\\backend\\products\\apps.py",
-              "ViewState": "AgIAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAA==",
-              "Icon": "ae27a6b0-e345-4288-96df-5eaf394ee369.002457|",
-              "WhenOpened": "2026-02-28T07:16:34.231Z",
-              "EditorCaption": ""
-            },
-            {
-              "$type": "Document",
-              "DocumentIndex": 2,
-              "Title": "models.py",
-              "DocumentMoniker": "D:\\VS2022\\eCommercePlatformProject\\src\\backend\\products\\models.py",
-              "RelativeDocumentMoniker": "src\\backend\\products\\models.py",
-              "ToolTip": "D:\\VS2022\\eCommercePlatformProject\\src\\backend\\products\\models.py",
-              "RelativeToolTip": "src\\backend\\products\\models.py",
-              "ViewState": "AgIAADsAAAAAAAAAAAAAAEcAAAApAAAAAAAAAA==",
-              "Icon": "ae27a6b0-e345-4288-96df-5eaf394ee369.002457|",
-              "WhenOpened": "2026-02-28T06:18:52.655Z",
-              "EditorCaption": ""
-            },
-            {
-              "$type": "Document",
-              "DocumentIndex": 1,
-              "Title": "settings.py",
-              "DocumentMoniker": "D:\\VS2022\\eCommercePlatformProject\\src\\backend\\backendCore\\settings.py",
-              "RelativeDocumentMoniker": "src\\backend\\backendCore\\settings.py",
-              "ToolTip": "D:\\VS2022\\eCommercePlatformProject\\src\\backend\\backendCore\\settings.py",
-              "RelativeToolTip": "src\\backend\\backendCore\\settings.py",
-              "ViewState": "AgIAAG8AAAAAAAAAAAAAAHIAAAAAAAAAAAAAAA==",
-              "Icon": "ae27a6b0-e345-4288-96df-5eaf394ee369.002457|",
-              "WhenOpened": "2026-02-28T05:58:38.036Z",
-              "EditorCaption": ""
+              "WhenOpened": "2026-03-03T12:57:47.455Z"
             },
             {
               "$type": "Document",
@@ -248,6 +143,98 @@
               "Icon": "ae27a6b0-e345-4288-96df-5eaf394ee369.002457|",
               "WhenOpened": "2026-02-28T06:21:15.673Z",
               "EditorCaption": ""
+            },
+            {
+              "$type": "Document",
+              "DocumentIndex": 13,
+              "Title": "change_form.html",
+              "DocumentMoniker": "C:\\Users\\Lenovo\\AppData\\Local\\Temp\\CopilotBaseline\\Deleted\\2073370662\\change_form.html",
+              "ToolTip": "C:\\Users\\Lenovo\\AppData\\Local\\Temp\\CopilotBaseline\\Deleted\\2073370662\\change_form.html",
+              "Icon": "ae27a6b0-e345-4288-96df-5eaf394ee369.001512|",
+              "WhenOpened": "2026-03-03T12:57:47.719Z"
+            },
+            {
+              "$type": "Document",
+              "DocumentIndex": 14,
+              "Title": "index.html",
+              "DocumentMoniker": "C:\\Users\\Lenovo\\AppData\\Local\\Temp\\CopilotBaseline\\Deleted\\1459111381\\index.html",
+              "ToolTip": "C:\\Users\\Lenovo\\AppData\\Local\\Temp\\CopilotBaseline\\Deleted\\1459111381\\index.html",
+              "ViewState": "AgIAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAA==",
+              "Icon": "ae27a6b0-e345-4288-96df-5eaf394ee369.001512|",
+              "WhenOpened": "2026-03-03T12:57:47.759Z",
+              "EditorCaption": ""
+            },
+            {
+              "$type": "Document",
+              "DocumentIndex": 6,
+              "Title": "0002_add_slug_nullable.py",
+              "DocumentMoniker": "D:\\VS2022\\eCommercePlatformProject\\src\\backend\\products\\migrations\\0002_add_slug_nullable.py",
+              "RelativeDocumentMoniker": "src\\backend\\products\\migrations\\0002_add_slug_nullable.py",
+              "ToolTip": "D:\\VS2022\\eCommercePlatformProject\\src\\backend\\products\\migrations\\0002_add_slug_nullable.py",
+              "RelativeToolTip": "src\\backend\\products\\migrations\\0002_add_slug_nullable.py",
+              "ViewState": "AgIAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAA==",
+              "Icon": "ae27a6b0-e345-4288-96df-5eaf394ee369.002457|",
+              "WhenOpened": "2026-03-03T12:57:47.403Z"
+            },
+            {
+              "$type": "Document",
+              "DocumentIndex": 5,
+              "Title": "fix_category_duplicates.py",
+              "DocumentMoniker": "D:\\VS2022\\eCommercePlatformProject\\src\\backend\\products\\management\\commands\\fix_category_duplicates.py",
+              "RelativeDocumentMoniker": "src\\backend\\products\\management\\commands\\fix_category_duplicates.py",
+              "ToolTip": "D:\\VS2022\\eCommercePlatformProject\\src\\backend\\products\\management\\commands\\fix_category_duplicates.py",
+              "RelativeToolTip": "src\\backend\\products\\management\\commands\\fix_category_duplicates.py",
+              "ViewState": "AgIAAAAAAAAAAAAAAAAAADoAAAAAAAAAAAAAAA==",
+              "Icon": "ae27a6b0-e345-4288-96df-5eaf394ee369.002457|",
+              "WhenOpened": "2026-02-28T10:36:04.517Z"
+            },
+            {
+              "$type": "Document",
+              "DocumentIndex": 4,
+              "Title": "urls.py",
+              "DocumentMoniker": "D:\\VS2022\\eCommercePlatformProject\\src\\backend\\backendCore\\urls.py",
+              "RelativeDocumentMoniker": "src\\backend\\backendCore\\urls.py",
+              "ToolTip": "D:\\VS2022\\eCommercePlatformProject\\src\\backend\\backendCore\\urls.py",
+              "RelativeToolTip": "src\\backend\\backendCore\\urls.py",
+              "ViewState": "AgIAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAA==",
+              "Icon": "ae27a6b0-e345-4288-96df-5eaf394ee369.002457|",
+              "WhenOpened": "2026-02-28T08:11:14.076Z"
+            },
+            {
+              "$type": "Document",
+              "DocumentIndex": 3,
+              "Title": "apps.py",
+              "DocumentMoniker": "D:\\VS2022\\eCommercePlatformProject\\src\\backend\\products\\apps.py",
+              "RelativeDocumentMoniker": "src\\backend\\products\\apps.py",
+              "ToolTip": "D:\\VS2022\\eCommercePlatformProject\\src\\backend\\products\\apps.py",
+              "RelativeToolTip": "src\\backend\\products\\apps.py",
+              "ViewState": "AgIAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAA==",
+              "Icon": "ae27a6b0-e345-4288-96df-5eaf394ee369.002457|",
+              "WhenOpened": "2026-02-28T07:16:34.231Z"
+            },
+            {
+              "$type": "Document",
+              "DocumentIndex": 2,
+              "Title": "models.py",
+              "DocumentMoniker": "D:\\VS2022\\eCommercePlatformProject\\src\\backend\\products\\models.py",
+              "RelativeDocumentMoniker": "src\\backend\\products\\models.py",
+              "ToolTip": "D:\\VS2022\\eCommercePlatformProject\\src\\backend\\products\\models.py",
+              "RelativeToolTip": "src\\backend\\products\\models.py",
+              "ViewState": "AgIAADsAAAAAAAAAAAAAAEcAAAApAAAAAAAAAA==",
+              "Icon": "ae27a6b0-e345-4288-96df-5eaf394ee369.002457|",
+              "WhenOpened": "2026-02-28T06:18:52.655Z"
+            },
+            {
+              "$type": "Document",
+              "DocumentIndex": 1,
+              "Title": "settings.py",
+              "DocumentMoniker": "D:\\VS2022\\eCommercePlatformProject\\src\\backend\\backendCore\\settings.py",
+              "RelativeDocumentMoniker": "src\\backend\\backendCore\\settings.py",
+              "ToolTip": "D:\\VS2022\\eCommercePlatformProject\\src\\backend\\backendCore\\settings.py",
+              "RelativeToolTip": "src\\backend\\backendCore\\settings.py",
+              "ViewState": "AgIAAG8AAAAAAAAAAAAAAHIAAAAAAAAAAAAAAA==",
+              "Icon": "ae27a6b0-e345-4288-96df-5eaf394ee369.002457|",
+              "WhenOpened": "2026-02-28T05:58:38.036Z"
             }
           ]
         }

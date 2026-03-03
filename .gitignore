@@ -3,3 +3,4 @@ postman/environments/
 postman/globals/
 
 .vs/
+.idea/

@@ -306,9 +306,9 @@
 }
 ```
 
-## 6. 用户 API（已实现，待主路由挂载）
+## 6. 用户 API
 
-以下接口已在 `src/backend/user/urls.py` 定义，但当前 `backendCore/urls.py` 尚未 include：
+以下接口已在 `src/backend/users/urls.py` 定义
 
 - `POST /api/user/register/`
 - `POST /api/user/login/`
@@ -408,7 +408,7 @@
 
 状态码：`200/401`
 
-建议补充主路由后再开放给前端联调。
+
 
 ## 7. 落文档建议流程
 

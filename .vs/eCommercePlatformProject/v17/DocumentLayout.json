@@ -1,71 +1,240 @@
 {
   "Version": 1,
-  "WorkspaceRootPath": "C:\\Users\\Sinis\\Desktop\\Django\\eCommercePlatformProject\\",
-  "Documents": [],
+  "WorkspaceRootPath": "D:\\VS2022\\eCommercePlatformProject\\",
+  "Documents": [
+    {
+      "AbsoluteMoniker": "D:0:0:{A2FE74E1-B743-11D0-AE1A-00A0C90FFFC3}|\u003CMiscFiles\u003E|D:\\VS2022\\eCommercePlatformProject\\src\\backend\\products\\admin.py||{8B382828-6202-11D1-8870-0000F87579D2}",
+      "RelativeMoniker": "D:0:0:{A2FE74E1-B743-11D0-AE1A-00A0C90FFFC3}|\u003CMiscFiles\u003E|solutionrelative:src\\backend\\products\\admin.py||{8B382828-6202-11D1-8870-0000F87579D2}"
+    },
+    {
+      "AbsoluteMoniker": "D:0:0:{A2FE74E1-B743-11D0-AE1A-00A0C90FFFC3}|\u003CMiscFiles\u003E|D:\\VS2022\\eCommercePlatformProject\\src\\backend\\backendCore\\settings.py||{8B382828-6202-11D1-8870-0000F87579D2}",
+      "RelativeMoniker": "D:0:0:{A2FE74E1-B743-11D0-AE1A-00A0C90FFFC3}|\u003CMiscFiles\u003E|solutionrelative:src\\backend\\backendCore\\settings.py||{8B382828-6202-11D1-8870-0000F87579D2}"
+    },
+    {
+      "AbsoluteMoniker": "D:0:0:{A2FE74E1-B743-11D0-AE1A-00A0C90FFFC3}|\u003CMiscFiles\u003E|D:\\VS2022\\eCommercePlatformProject\\src\\backend\\products\\models.py||{8B382828-6202-11D1-8870-0000F87579D2}",
+      "RelativeMoniker": "D:0:0:{A2FE74E1-B743-11D0-AE1A-00A0C90FFFC3}|\u003CMiscFiles\u003E|solutionrelative:src\\backend\\products\\models.py||{8B382828-6202-11D1-8870-0000F87579D2}"
+    },
+    {
+      "AbsoluteMoniker": "D:0:0:{A2FE74E1-B743-11D0-AE1A-00A0C90FFFC3}|\u003CMiscFiles\u003E|D:\\VS2022\\eCommercePlatformProject\\src\\backend\\products\\apps.py||{8B382828-6202-11D1-8870-0000F87579D2}",
+      "RelativeMoniker": "D:0:0:{A2FE74E1-B743-11D0-AE1A-00A0C90FFFC3}|\u003CMiscFiles\u003E|solutionrelative:src\\backend\\products\\apps.py||{8B382828-6202-11D1-8870-0000F87579D2}"
+    },
+    {
+      "AbsoluteMoniker": "D:0:0:{A2FE74E1-B743-11D0-AE1A-00A0C90FFFC3}|\u003CMiscFiles\u003E|D:\\VS2022\\eCommercePlatformProject\\src\\backend\\backendCore\\urls.py||{8B382828-6202-11D1-8870-0000F87579D2}",
+      "RelativeMoniker": "D:0:0:{A2FE74E1-B743-11D0-AE1A-00A0C90FFFC3}|\u003CMiscFiles\u003E|solutionrelative:src\\backend\\backendCore\\urls.py||{8B382828-6202-11D1-8870-0000F87579D2}"
+    },
+    {
+      "AbsoluteMoniker": "D:0:0:{A2FE74E1-B743-11D0-AE1A-00A0C90FFFC3}|\u003CMiscFiles\u003E|D:\\VS2022\\eCommercePlatformProject\\src\\backend\\products\\management\\commands\\fix_category_duplicates.py||{8B382828-6202-11D1-8870-0000F87579D2}|",
+      "RelativeMoniker": "D:0:0:{A2FE74E1-B743-11D0-AE1A-00A0C90FFFC3}|\u003CMiscFiles\u003E|solutionrelative:src\\backend\\products\\management\\commands\\fix_category_duplicates.py||{8B382828-6202-11D1-8870-0000F87579D2}|"
+    },
+    {
+      "AbsoluteMoniker": "D:0:0:{A2FE74E1-B743-11D0-AE1A-00A0C90FFFC3}|\u003CMiscFiles\u003E|D:\\VS2022\\eCommercePlatformProject\\src\\backend\\products\\migrations\\0002_add_slug_nullable.py||{8B382828-6202-11D1-8870-0000F87579D2}",
+      "RelativeMoniker": "D:0:0:{A2FE74E1-B743-11D0-AE1A-00A0C90FFFC3}|\u003CMiscFiles\u003E|solutionrelative:src\\backend\\products\\migrations\\0002_add_slug_nullable.py||{8B382828-6202-11D1-8870-0000F87579D2}"
+    },
+    {
+      "AbsoluteMoniker": "D:0:0:{A2FE74E1-B743-11D0-AE1A-00A0C90FFFC3}|\u003CMiscFiles\u003E|D:\\VS2022\\eCommercePlatformProject\\src\\backend\\products\\migrations\\0003_make_slug_unique.py||{8B382828-6202-11D1-8870-0000F87579D2}",
+      "RelativeMoniker": "D:0:0:{A2FE74E1-B743-11D0-AE1A-00A0C90FFFC3}|\u003CMiscFiles\u003E|solutionrelative:src\\backend\\products\\migrations\\0003_make_slug_unique.py||{8B382828-6202-11D1-8870-0000F87579D2}"
+    },
+    {
+      "AbsoluteMoniker": "D:0:0:{A2FE74E1-B743-11D0-AE1A-00A0C90FFFC3}|\u003CMiscFiles\u003E|D:\\VS2022\\eCommercePlatformProject\\src\\backend\\products\\migrations\\0001_initial.py||{8B382828-6202-11D1-8870-0000F87579D2}",
+      "RelativeMoniker": "D:0:0:{A2FE74E1-B743-11D0-AE1A-00A0C90FFFC3}|\u003CMiscFiles\u003E|solutionrelative:src\\backend\\products\\migrations\\0001_initial.py||{8B382828-6202-11D1-8870-0000F87579D2}"
+    },
+    {
+      "AbsoluteMoniker": "D:0:0:{A2FE74E1-B743-11D0-AE1A-00A0C90FFFC3}|\u003CMiscFiles\u003E|C:\\Users\\Lenovo\\AppData\\Local\\Temp\\CopilotBaseline\\Deleted\\-1239476827\\change_form.html||{40D31677-CBC0-4297-A9EF-89D907823A98}"
+    },
+    {
+      "AbsoluteMoniker": "D:0:0:{A2FE74E1-B743-11D0-AE1A-00A0C90FFFC3}|\u003CMiscFiles\u003E|C:\\Users\\Lenovo\\AppData\\Local\\Temp\\CopilotBaseline\\Deleted\\1552964668\\add_form.html||{40D31677-CBC0-4297-A9EF-89D907823A98}"
+    },
+    {
+      "AbsoluteMoniker": "D:0:0:{A2FE74E1-B743-11D0-AE1A-00A0C90FFFC3}|\u003CMiscFiles\u003E|C:\\Users\\Lenovo\\AppData\\Local\\Temp\\CopilotBaseline\\Deleted\\1552964668\\change_form.html||{40D31677-CBC0-4297-A9EF-89D907823A98}"
+    },
+    {
+      "AbsoluteMoniker": "D:0:0:{A2FE74E1-B743-11D0-AE1A-00A0C90FFFC3}|\u003CMiscFiles\u003E|C:\\Users\\Lenovo\\AppData\\Local\\Temp\\CopilotBaseline\\Deleted\\2073370662\\add_form.html||{40D31677-CBC0-4297-A9EF-89D907823A98}"
+    },
+    {
+      "AbsoluteMoniker": "D:0:0:{A2FE74E1-B743-11D0-AE1A-00A0C90FFFC3}|\u003CMiscFiles\u003E|C:\\Users\\Lenovo\\AppData\\Local\\Temp\\CopilotBaseline\\Deleted\\2073370662\\change_form.html||{40D31677-CBC0-4297-A9EF-89D907823A98}"
+    },
+    {
+      "AbsoluteMoniker": "D:0:0:{A2FE74E1-B743-11D0-AE1A-00A0C90FFFC3}|\u003CMiscFiles\u003E|C:\\Users\\Lenovo\\AppData\\Local\\Temp\\CopilotBaseline\\Deleted\\1459111381\\index.html||{40D31677-CBC0-4297-A9EF-89D907823A98}"
+    }
+  ],
   "DocumentGroupContainers": [
     {
       "Orientation": 0,
       "VerticalTabListWidth": 256,
       "DocumentGroups": [
         {
-          "DockedWidth": 755,
-          "SelectedChildIndex": -1,
+          "DockedWidth": 200,
+          "SelectedChildIndex": 7,
           "Children": [
-            {
-              "$type": "Bookmark",
-              "Name": "ST:128:0:{75188d03-9892-4ae2-abf1-207126247ce5}"
-            },
             {
               "$type": "Bookmark",
               "Name": "ST:0:0:{1c4feeaa-4718-4aa9-859d-94ce25d182ba}"
             },
             {
-              "$type": "Bookmark",
-              "Name": "ST:0:0:{4a9b7e51-aa16-11d0-a8c5-00a0c921a4d2}"
+              "$type": "Document",
+              "DocumentIndex": 12,
+              "Title": "add_form.html",
+              "DocumentMoniker": "C:\\Users\\Lenovo\\AppData\\Local\\Temp\\CopilotBaseline\\Deleted\\2073370662\\add_form.html",
+              "ToolTip": "C:\\Users\\Lenovo\\AppData\\Local\\Temp\\CopilotBaseline\\Deleted\\2073370662\\add_form.html",
+              "Icon": "ae27a6b0-e345-4288-96df-5eaf394ee369.001512|",
+              "WhenOpened": "2026-03-03T12:57:47.673Z"
             },
             {
-              "$type": "Bookmark",
-              "Name": "ST:0:0:{004be353-6879-467c-9d1e-9ac23cdf6d49}"
+              "$type": "Document",
+              "DocumentIndex": 11,
+              "Title": "change_form.html",
+              "DocumentMoniker": "C:\\Users\\Lenovo\\AppData\\Local\\Temp\\CopilotBaseline\\Deleted\\1552964668\\change_form.html",
+              "ToolTip": "C:\\Users\\Lenovo\\AppData\\Local\\Temp\\CopilotBaseline\\Deleted\\1552964668\\change_form.html",
+              "Icon": "ae27a6b0-e345-4288-96df-5eaf394ee369.001512|",
+              "WhenOpened": "2026-03-03T12:57:47.622Z"
             },
             {
-              "$type": "Bookmark",
-              "Name": "ST:128:0:{1fc202d4-d401-403c-9834-5b218574bb67}"
-            }
-          ]
-        },
-        {
-          "DockedWidth": 483,
-          "SelectedChildIndex": -1,
-          "Children": [
-            {
-              "$type": "Bookmark",
-              "Name": "ST:0:0:{d3750d8a-574b-4fb3-b7e2-aa8af40e8231}"
+              "$type": "Document",
+              "DocumentIndex": 10,
+              "Title": "add_form.html",
+              "DocumentMoniker": "C:\\Users\\Lenovo\\AppData\\Local\\Temp\\CopilotBaseline\\Deleted\\1552964668\\add_form.html",
+              "ToolTip": "C:\\Users\\Lenovo\\AppData\\Local\\Temp\\CopilotBaseline\\Deleted\\1552964668\\add_form.html",
+              "Icon": "ae27a6b0-e345-4288-96df-5eaf394ee369.001512|",
+              "WhenOpened": "2026-03-03T12:57:47.583Z"
             },
             {
-              "$type": "Bookmark",
-              "Name": "ST:0:0:{d78612c7-9962-4b83-95d9-268046dad23a}"
+              "$type": "Document",
+              "DocumentIndex": 9,
+              "Title": "change_form.html",
+              "DocumentMoniker": "C:\\Users\\Lenovo\\AppData\\Local\\Temp\\CopilotBaseline\\Deleted\\-1239476827\\change_form.html",
+              "ToolTip": "C:\\Users\\Lenovo\\AppData\\Local\\Temp\\CopilotBaseline\\Deleted\\-1239476827\\change_form.html",
+              "Icon": "ae27a6b0-e345-4288-96df-5eaf394ee369.001512|",
+              "WhenOpened": "2026-03-03T12:57:47.541Z"
             },
             {
-              "$type": "Bookmark",
-              "Name": "ST:0:0:{34e76e81-ee4a-11d0-ae2e-00a0c90fffc3}"
+              "$type": "Document",
+              "DocumentIndex": 8,
+              "Title": "0001_initial.py",
+              "DocumentMoniker": "D:\\VS2022\\eCommercePlatformProject\\src\\backend\\products\\migrations\\0001_initial.py",
+              "RelativeDocumentMoniker": "src\\backend\\products\\migrations\\0001_initial.py",
+              "ToolTip": "D:\\VS2022\\eCommercePlatformProject\\src\\backend\\products\\migrations\\0001_initial.py",
+              "RelativeToolTip": "src\\backend\\products\\migrations\\0001_initial.py",
+              "ViewState": "AgIAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAA==",
+              "Icon": "ae27a6b0-e345-4288-96df-5eaf394ee369.002457|",
+              "WhenOpened": "2026-03-03T12:57:47.494Z",
+              "EditorCaption": ""
             },
             {
-              "$type": "Bookmark",
-              "Name": "ST:283709:0:{1a46fd64-28d5-0019-8eb3-17a02d419b53}"
-            }
-          ]
-        },
-        {
-          "DockedWidth": 483,
-          "SelectedChildIndex": -1,
-          "Children": [
-            {
-              "$type": "Bookmark",
-              "Name": "ST:0:0:{40ea2e6b-2121-4bb8-a43e-c83c04b51041}"
+              "$type": "Document",
+              "DocumentIndex": 7,
+              "Title": "0003_make_slug_unique.py",
+              "DocumentMoniker": "D:\\VS2022\\eCommercePlatformProject\\src\\backend\\products\\migrations\\0003_make_slug_unique.py",
+              "RelativeDocumentMoniker": "src\\backend\\products\\migrations\\0003_make_slug_unique.py",
+              "ToolTip": "D:\\VS2022\\eCommercePlatformProject\\src\\backend\\products\\migrations\\0003_make_slug_unique.py",
+              "RelativeToolTip": "src\\backend\\products\\migrations\\0003_make_slug_unique.py",
+              "ViewState": "AgIAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAA==",
+              "Icon": "ae27a6b0-e345-4288-96df-5eaf394ee369.002457|",
+              "WhenOpened": "2026-03-03T12:57:47.455Z"
             },
             {
-              "$type": "Bookmark",
-              "Name": "ST:0:0:{3ae79031-e1bc-11d0-8f78-00a0c9110057}"
+              "$type": "Document",
+              "DocumentIndex": 0,
+              "Title": "admin.py",
+              "DocumentMoniker": "D:\\VS2022\\eCommercePlatformProject\\src\\backend\\products\\admin.py",
+              "RelativeDocumentMoniker": "src\\backend\\products\\admin.py",
+              "ToolTip": "D:\\VS2022\\eCommercePlatformProject\\src\\backend\\products\\admin.py",
+              "RelativeToolTip": "src\\backend\\products\\admin.py",
+              "ViewState": "AgIAACYAAAAAAAAAAAAAADEAAAAIAAAAAAAAAA==",
+              "Icon": "ae27a6b0-e345-4288-96df-5eaf394ee369.002457|",
+              "WhenOpened": "2026-02-28T06:21:15.673Z",
+              "EditorCaption": ""
+            },
+            {
+              "$type": "Document",
+              "DocumentIndex": 13,
+              "Title": "change_form.html",
+              "DocumentMoniker": "C:\\Users\\Lenovo\\AppData\\Local\\Temp\\CopilotBaseline\\Deleted\\2073370662\\change_form.html",
+              "ToolTip": "C:\\Users\\Lenovo\\AppData\\Local\\Temp\\CopilotBaseline\\Deleted\\2073370662\\change_form.html",
+              "Icon": "ae27a6b0-e345-4288-96df-5eaf394ee369.001512|",
+              "WhenOpened": "2026-03-03T12:57:47.719Z"
+            },
+            {
+              "$type": "Document",
+              "DocumentIndex": 14,
+              "Title": "index.html",
+              "DocumentMoniker": "C:\\Users\\Lenovo\\AppData\\Local\\Temp\\CopilotBaseline\\Deleted\\1459111381\\index.html",
+              "ToolTip": "C:\\Users\\Lenovo\\AppData\\Local\\Temp\\CopilotBaseline\\Deleted\\1459111381\\index.html",
+              "ViewState": "AgIAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAA==",
+              "Icon": "ae27a6b0-e345-4288-96df-5eaf394ee369.001512|",
+              "WhenOpened": "2026-03-03T12:57:47.759Z",
+              "EditorCaption": ""
+            },
+            {
+              "$type": "Document",
+              "DocumentIndex": 6,
+              "Title": "0002_add_slug_nullable.py",
+              "DocumentMoniker": "D:\\VS2022\\eCommercePlatformProject\\src\\backend\\products\\migrations\\0002_add_slug_nullable.py",
+              "RelativeDocumentMoniker": "src\\backend\\products\\migrations\\0002_add_slug_nullable.py",
+              "ToolTip": "D:\\VS2022\\eCommercePlatformProject\\src\\backend\\products\\migrations\\0002_add_slug_nullable.py",
+              "RelativeToolTip": "src\\backend\\products\\migrations\\0002_add_slug_nullable.py",
+              "ViewState": "AgIAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAA==",
+              "Icon": "ae27a6b0-e345-4288-96df-5eaf394ee369.002457|",
+              "WhenOpened": "2026-03-03T12:57:47.403Z"
+            },
+            {
+              "$type": "Document",
+              "DocumentIndex": 5,
+              "Title": "fix_category_duplicates.py",
+              "DocumentMoniker": "D:\\VS2022\\eCommercePlatformProject\\src\\backend\\products\\management\\commands\\fix_category_duplicates.py",
+              "RelativeDocumentMoniker": "src\\backend\\products\\management\\commands\\fix_category_duplicates.py",
+              "ToolTip": "D:\\VS2022\\eCommercePlatformProject\\src\\backend\\products\\management\\commands\\fix_category_duplicates.py",
+              "RelativeToolTip": "src\\backend\\products\\management\\commands\\fix_category_duplicates.py",
+              "ViewState": "AgIAAAAAAAAAAAAAAAAAADoAAAAAAAAAAAAAAA==",
+              "Icon": "ae27a6b0-e345-4288-96df-5eaf394ee369.002457|",
+              "WhenOpened": "2026-02-28T10:36:04.517Z"
+            },
+            {
+              "$type": "Document",
+              "DocumentIndex": 4,
+              "Title": "urls.py",
+              "DocumentMoniker": "D:\\VS2022\\eCommercePlatformProject\\src\\backend\\backendCore\\urls.py",
+              "RelativeDocumentMoniker": "src\\backend\\backendCore\\urls.py",
+              "ToolTip": "D:\\VS2022\\eCommercePlatformProject\\src\\backend\\backendCore\\urls.py",
+              "RelativeToolTip": "src\\backend\\backendCore\\urls.py",
+              "ViewState": "AgIAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAA==",
+              "Icon": "ae27a6b0-e345-4288-96df-5eaf394ee369.002457|",
+              "WhenOpened": "2026-02-28T08:11:14.076Z"
+            },
+            {
+              "$type": "Document",
+              "DocumentIndex": 3,
+              "Title": "apps.py",
+              "DocumentMoniker": "D:\\VS2022\\eCommercePlatformProject\\src\\backend\\products\\apps.py",
+              "RelativeDocumentMoniker": "src\\backend\\products\\apps.py",
+              "ToolTip": "D:\\VS2022\\eCommercePlatformProject\\src\\backend\\products\\apps.py",
+              "RelativeToolTip": "src\\backend\\products\\apps.py",
+              "ViewState": "AgIAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAA==",
+              "Icon": "ae27a6b0-e345-4288-96df-5eaf394ee369.002457|",
+              "WhenOpened": "2026-02-28T07:16:34.231Z"
+            },
+            {
+              "$type": "Document",
+              "DocumentIndex": 2,
+              "Title": "models.py",
+              "DocumentMoniker": "D:\\VS2022\\eCommercePlatformProject\\src\\backend\\products\\models.py",
+              "RelativeDocumentMoniker": "src\\backend\\products\\models.py",
+              "ToolTip": "D:\\VS2022\\eCommercePlatformProject\\src\\backend\\products\\models.py",
+              "RelativeToolTip": "src\\backend\\products\\models.py",
+              "ViewState": "AgIAADsAAAAAAAAAAAAAAEcAAAApAAAAAAAAAA==",
+              "Icon": "ae27a6b0-e345-4288-96df-5eaf394ee369.002457|",
+              "WhenOpened": "2026-02-28T06:18:52.655Z"
+            },
+            {
+              "$type": "Document",
+              "DocumentIndex": 1,
+              "Title": "settings.py",
+              "DocumentMoniker": "D:\\VS2022\\eCommercePlatformProject\\src\\backend\\backendCore\\settings.py",
+              "RelativeDocumentMoniker": "src\\backend\\backendCore\\settings.py",
+              "ToolTip": "D:\\VS2022\\eCommercePlatformProject\\src\\backend\\backendCore\\settings.py",
+              "RelativeToolTip": "src\\backend\\backendCore\\settings.py",
+              "ViewState": "AgIAAG8AAAAAAAAAAAAAAHIAAAAAAAAAAAAAAA==",
+              "Icon": "ae27a6b0-e345-4288-96df-5eaf394ee369.002457|",
+              "WhenOpened": "2026-02-28T05:58:38.036Z"
             }
           ]
         }

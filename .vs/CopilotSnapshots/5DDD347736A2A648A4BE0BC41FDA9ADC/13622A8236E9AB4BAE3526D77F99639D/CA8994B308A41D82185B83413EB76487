@@ -1,0 +1,171 @@
+﻿from django.db import models
+from django.core.exceptions import ValidationError
+from django.db.models import Q
+
+class Category(models.Model):
+    """商品分类
+
+    规则：
+     - 同一父级下名称唯一（UniqueConstraint(parent, name))
+     -不能设置自己或其子孙作为父级（防止循环）
+     - 最大层级限制由 `MAX_DEPTH` 控制，默认5 层
+     - 在保存时会自动调用 `full_clean()`以保证校验被执行
+     """
+    MAX_DEPTH =5
+
+    name = models.CharField('分类名称', max_length=50)
+    parent = models.ForeignKey(
+        'self',
+        on_delete=models.CASCADE,
+        null=True,
+        blank=True,
+        related_name='children',
+        verbose_name='父级分类'
+    )
+    sort_order = models.IntegerField('排序', default=0)
+    created_at = models.DateTimeField('创建时间', auto_now_add=True)
+
+    class Meta:
+        verbose_name = '商品分类'
+        verbose_name_plural = '商品分类'
+        ordering = ['sort_order']
+        indexes = [models.Index(fields=['sort_order'])]
+        constraints = [
+            models.UniqueConstraint(fields=['parent', 'name'], name='uniq_parent_name')
+        ]
+
+    def __str__(self):
+        return self.name
+
+    def get_ancestors(self):
+        """返回从父级到根的列表（不包含自身），最近父级在列表首位."""
+        ancestors = []
+        node = self.parent
+        while node is not None:
+            ancestors.append(node)
+            node = node.parent
+        return ancestors
+
+    def get_descendants(self):
+        """递归返回所有后代（列表）。谨慎使用于大型树."""
+        descendants = []
+        children = list(self.children.all())
+        for child in children:
+            descendants.append(child)
+            descendants.extend(child.get_descendants())
+        return descendants
+
+    @property
+    def level(self):
+        """根节点层级为1，子节点为父级层级+1"""
+        return len(self.get_ancestors()) +1
+
+    def clean(self):
+        """校验避免循环的父子关系并限制最大层级.
+
+        注：只校验循环与最大层级；同名冲突仅在同一父级由 UniqueConstraint 保证。
+         """
+        if self.parent:
+            #不能将自己设为父级
+            if self.parent_id == self.id:
+                raise ValidationError({'parent': '父级分类不能是自身'})
+
+            # 检查父系中是否包含自己（防止环）
+            ancestor = self.parent
+            while ancestor is not None:
+                if getattr(ancestor, 'id', None) == self.id:
+                    raise ValidationError({'parent': '父级分类不能是其子级（会导致循环）'})
+                ancestor = ancestor.parent
+
+            # 限制最大层级
+            depth =1
+            ancestor = self.parent
+            while ancestor is not None:
+                depth +=1
+                if depth > self.MAX_DEPTH:
+                    raise ValidationError({'parent': f'分类层级不能超过 {self.MAX_DEPTH} 层'})
+                ancestor = ancestor.parent
+
+    def save(self, *args, **kwargs):
+        # 在保存前执行校验，确保通过 admin 或程序创建时应用 model 的 clean规则
+        self.full_clean()
+        super().save(*args, **kwargs)
+
+class Product(models.Model):
+    """商品"""
+    category = models.ForeignKey(
+        Category,
+        on_delete=models.PROTECT,
+        related_name='products',
+        verbose_name='所属分类'
+    )
+    name = models.CharField('商品名称', max_length=200)
+    slug = models.SlugField('URL 标识', max_length=200, unique=True)
+    price = models.DecimalField('价格', max_digits=10, decimal_places=2)
+    stock = models.IntegerField('库存', default=0)
+    is_active = models.BooleanField('上架', default=True)
+    cover_image = models.ImageField(
+        '封面图',
+        upload_to='products/covers/',
+        blank=True,
+        null=True
+    )
+    description = models.TextField('商品描述', blank=True)
+    created_at = models.DateTimeField('创建时间', auto_now_add=True)
+    updated_at = models.DateTimeField('更新时间', auto_now=True)
+
+    class Meta:
+        verbose_name = '商品'
+        verbose_name_plural = '商品'
+        indexes = [
+            models.Index(fields=['category']),
+            models.Index(fields=['is_active']),
+            models.Index(fields=['created_at']),
+        ]
+        constraints = [
+            models.CheckConstraint(check=Q(price__gte=0), name='price_gte_0'),
+            models.CheckConstraint(check=Q(stock__gte=0), name='stock_gte_0'),
+        ]
+
+    def __str__(self):
+        return self.name
+
+    def clean(self):
+        """基础校验：价格和库存不能为负数"""
+        errors = {}
+        if self.price is not None and self.price <0:
+            errors['price'] = ValidationError('价格不能为负数')
+        if self.stock is not None and self.stock <0:
+            errors['stock'] = ValidationError('库存不能为负数')
+        if errors:
+            raise ValidationError(errors)
+
+    def decrease_stock(self, amount):
+        """从库存中扣减，若不足则抛出异常"""
+        if amount <0:
+            raise ValueError('扣减数量必须为正数')
+        if amount > self.stock:
+            raise ValidationError('库存不足')
+        self.stock -= amount
+        self.save(update_fields=['stock'])
+
+class ProductImage(models.Model):
+    """商品图片"""
+    product = models.ForeignKey(
+        Product,
+        on_delete=models.CASCADE,
+        related_name='images',
+        verbose_name='商品'
+    )
+    image = models.ImageField('图片', upload_to='products/detail/')
+    sort_order = models.IntegerField('排序', default=0)
+    created_at = models.DateTimeField('创建时间', auto_now_add=True)
+
+    class Meta:
+        verbose_name = '商品图片'
+        verbose_name_plural = '商品图片'
+        ordering = ['sort_order']
+        indexes = [models.Index(fields=['product']), models.Index(fields=['sort_order'])]
+
+    def __str__(self):
+        return f"{self.product.name} 的图片"

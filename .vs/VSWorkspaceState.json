@@ -2,9 +2,11 @@
   "ExpandedNodes": [
     "",
     "\\src",
-    "\\src\\frontend",
-    "\\src\\frontend\\frontend-core"
+    "\\src\\backend",
+    "\\src\\backend\\products",
+    "\\src\\backend\\products\\management",
+    "\\src\\backend\\products\\management\\commands"
   ],
-  "SelectedNode": "\\src\\frontend\\frontend-core\\.gitignore",
+  "SelectedNode": "\\src\\backend",
   "PreviewInSolutionExplorer": false
 }

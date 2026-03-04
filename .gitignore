@@ -1,6 +1,7 @@
 .postman/
 postman/environments/
 postman/globals/
+src/backend/.env
 
 .vs/
 .idea/

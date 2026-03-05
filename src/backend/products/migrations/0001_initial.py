@@ -93,10 +93,10 @@ class Migration(migrations.Migration):
         ),
         migrations.AddConstraint(
             model_name='product',
-            constraint=models.CheckConstraint(check=django.db.models.Q(('price__gte',0)), name='price_gte_0'),
+            constraint=models.CheckConstraint(condition=django.db.models.Q(('price__gte',0)), name='price_gte_0'),
         ),
         migrations.AddConstraint(
             model_name='product',
-            constraint=models.CheckConstraint(check=django.db.models.Q(('stock__gte',0)), name='stock_gte_0'),
+            constraint=models.CheckConstraint(condition=django.db.models.Q(('stock__gte',0)), name='stock_gte_0'),
         ),
     ]

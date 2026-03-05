@@ -1,15 +1,11 @@
-﻿from django.db import migrations, models
+from django.db import migrations
+
 
 class Migration(migrations.Migration):
 
- dependencies = [
- ('products', '0001_initial'),
- ]
+    dependencies = [
+        ('products', '0001_initial'),
+    ]
 
- operations = [
- migrations.AddField(
- model_name='product',
- name='slug',
- field=models.SlugField(max_length=200, null=True, blank=True),
- ),
- ]
+    # slug already exists in 0001_initial, so this migration is intentionally a no-op.
+    operations = []

@@ -16,26 +16,77 @@
       <!-- 右侧表单区 -->
       <div class="form-section">
         <!-- 表单标题 -->
-        <h2>登录账号</h2>
+        <h2>创建账号</h2>
         
-        <el-form :model="loginForm" ref="loginFormRef" label-width="0px" class="login-form">
+        <el-form :model="form" ref="formRef" label-width="0px" class="login-form">
+          <el-form-item prop="username">
+            <el-input 
+              v-model="form.username" 
+              placeholder="请输入昵称" 
+              size="large"
+              prefix-icon="el-icon-user"
+            />
+          </el-form-item>
+
           <el-form-item prop="email">
-            <el-input v-model="loginForm.email" placeholder="请输入邮箱" size="large" prefix-icon="el-icon-message" />
+            <el-input 
+              v-model="form.email" 
+              placeholder="请输入邮箱" 
+              size="large"
+              prefix-icon="el-icon-message"
+            />
+          </el-form-item>
+
+          <el-form-item prop="code">
+            <el-row :gutter="10">
+              <el-col :span="16">
+                <el-input 
+                  v-model="form.code" 
+                  placeholder="邮箱验证码" 
+                  size="large"
+                  prefix-icon="el-icon-sms"
+                />
+              </el-col>
+              <el-col :span="8">
+                <el-button 
+                  type="primary" 
+                  size="large" 
+                  class="code-btn"
+                  @click="sendCode"
+                >
+                  {{ codeText }}
+                </el-button>
+              </el-col>
+            </el-row>
           </el-form-item>
 
           <el-form-item prop="password">
-            <el-input v-model="loginForm.password" type="password" placeholder="请输入密码" size="large" prefix-icon="el-icon-lock" />
+            <el-input 
+              v-model="form.password" 
+              type="password" 
+              placeholder="请输入密码" 
+              size="large"
+              prefix-icon="el-icon-lock"
+            />
           </el-form-item>
 
           <el-form-item>
-            <el-button type="primary" size="large" class="submit-btn" @click="handleLogin">立即登录</el-button>
+            <el-button 
+              type="primary" 
+              size="large" 
+              class="submit-btn"
+              @click="handleSubmit"
+            >
+              立即注册
+            </el-button>
           </el-form-item>
         </el-form>
 
-        <!-- 跳回注册页的链接 -->
+        <!-- 底部链接 -->
         <div class="form-footer">
-          <span>还没有账号？</span>
-          <router-link to="/" class="link-btn">去注册</router-link>
+          <span>已经有美妆商城账号？</span>
+          <!-- router-link 会自动渲染为 a 标签，to 属性对应路由地址 -->
+          <router-link to="/login" class="link-btn">去登录</router-link>
         </div>
       </div>
     </div>
@@ -43,32 +94,72 @@
 </template>
 
 <script setup>
-import { ref, reactive } from 'vue'
-import { ElMessage } from 'element-plus'
+import { useRouter } from 'vue-router';
+import { ref, reactive } from 'vue';
+import { ElMessage } from 'element-plus';
 
-// 表单引用（必须与模板中的 ref="loginFormRef" 一致）
-const loginFormRef = ref(null)
+// 表单引用
+const formRef = ref(null);
 
-// 登录表单数据（必须与模板中的 :model="loginForm" 一致）
-const loginForm = reactive({
+// 表单数据
+const form = reactive({
+  username: '',
   email: '',
-
+  code: '',
   password: ''
-})
+});
+const router = useRouter();
 
-// 登录按钮点击事件（必须与模板中的 @click="handleLogin" 一致）
-const handleLogin = () => {
-  // 调用 Element Plus 表单验证
-  loginFormRef.value.validate((valid) => {
-    if (valid) {
-      console.log('登录数据:', loginForm)
-      ElMessage.success('登录成功！')
-      // TODO: 调用登录接口、跳转页面
-    } else {
-      ElMessage.error('请填写邮箱和密码')
+// 验证码倒计时
+const codeText = ref('发送验证码');
+let timer = null;
+
+// 发送验证码逻辑
+const sendCode = () => {
+  if (!form.email) {
+    ElMessage.warning('请先输入邮箱');
+    return;
+  }
+  
+  // 简单的邮箱校验
+  const reg = /^[a-zA-Z0-9._%+-]+@[a-zA-Z0-9.-]+\.[a-zA-Z]{2,}$/;
+  if (!reg.test(form.email)) {
+    ElMessage.warning('请输入正确的邮箱格式');
+    return;
+  }
+
+  // 倒计时逻辑
+  let count = 60;
+  codeText.value = `${count} s`;
+  timer = setInterval(() => {
+    count--;
+    codeText.value = `${count} s`;
+    if (count <= 0) {
+      clearInterval(timer);
+      codeText.value = '发送验证码';
     }
-  })
-}
+  }, 1000);
+
+  // 这里可以调用后端接口发送验证码
+  console.log('发送验证码到:', form.email);
+};
+
+// 提交表单逻辑
+const handleSubmit = () => {
+  formRef.value.validate((valid) => {
+    if (valid) {
+      // 表单验证通过，调用注册接口
+      console.log('注册数据:', form);
+      ElMessage.success('注册成功！');
+      // 跳转到登录页
+      setTimeout(() => {
+        router.push('/login');
+      }, 1500); // 1.5秒后跳转
+    } else {
+      ElMessage.error('请完善表单信息');
+    }
+  });
+};
 </script>
 
 <style scoped>
@@ -166,7 +257,6 @@ const handleLogin = () => {
   display: flex;
   flex-direction: column;
 }
-
 .form-section h2 {
   text-align: center;
   margin-bottom: 50px;  /* 当前间距 */

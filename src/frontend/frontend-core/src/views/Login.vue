@@ -9,7 +9,7 @@
       <div class="brand-section">
         <!-- Hello Kitty 图片 -->
         <img src="@/assets/hello-kitty.jpeg" alt="Hello Kitty" class="brand-logo" />
-        <h1 class="brand-title">beauty</h1>
+        <h1 class="brand-title">Beauty</h1>
         <p class="brand-slogan">美妆，为精致生活加分</p>
       </div>
 
@@ -45,9 +45,11 @@
 <script setup>
 import { ref, reactive } from 'vue'
 import { ElMessage } from 'element-plus'
+import { useRouter } from 'vue-router'
 
 // 表单引用（必须与模板中的 ref="loginFormRef" 一致）
 const loginFormRef = ref(null)
+const router = useRouter()     
 
 // 登录表单数据（必须与模板中的 :model="loginForm" 一致）
 const loginForm = reactive({
@@ -63,7 +65,7 @@ const handleLogin = () => {
     if (valid) {
       console.log('登录数据:', loginForm)
       ElMessage.success('登录成功！')
-      // TODO: 调用登录接口、跳转页面
+      router.push('/home')   // 跳转到首页
     } else {
       ElMessage.error('请填写邮箱和密码')
     }

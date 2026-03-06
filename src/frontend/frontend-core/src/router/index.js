@@ -1,10 +1,16 @@
 import { createRouter, createWebHistory } from 'vue-router'
 import Register from '@/views/Register.vue' // 注册页
 import Login from '@/views/Login.vue' // 登录页
-
+import Home from '@/views/Home.vue' 
+import ProductList from '../views/ProductList.vue'
 const routes = [
   {
-    path: '/', // 默认打开注册页
+    path: '/',          // 首页的路径
+    name: 'Home',
+    component: Home
+  },
+  {
+    path: '/register', // 打开注册页
     name: 'Register',
     component: Register
   },
@@ -12,6 +18,12 @@ const routes = [
     path: '/login', // 登录页路由地址
     name: 'Login',
     component: Login
+  },
+  
+  { 
+    path: '/products', 
+    name: 'product-list', 
+    component: ProductList 
   }
 ]
 const router = createRouter({

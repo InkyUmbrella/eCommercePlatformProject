@@ -457,7 +457,7 @@
 
 1. 前端 `POST /api/support/messages/` 提交 `content`（`nickname/contact` 可选）。
 2. 后端落库 `SupportMessage`，返回留言详情。
-3. 后台编辑同一条留言的 `reply_content`，保存后自动标记 `is_replied=true` 并写入 `replied_at`。
+3. 客服通过回复接口提交 `reply_content`，自动标记 `is_replied=true` 并写入 `replied_at`。
 4. 前端 `GET /api/support/messages/` 拉取最近 50 条，渲染回复块。
 
 ### 6.4 数据对象（SupportMessage）
@@ -486,6 +486,7 @@
 
 - `GET /api/support/messages/`
 - `POST /api/support/messages/`
+- `PATCH /api/support/messages/{message_id}/reply/`
 
 ### 7.1 获取留言列表
 
@@ -556,6 +557,41 @@
 失败场景（示例）：
 
 - `content 必填`
+
+### 7.3 客服回复留言
+
+- 方法：`PATCH`
+- 路径：`/api/support/messages/{message_id}/reply/`
+- 鉴权：**是**（`IsAuthenticated`，且需 `is_staff=true`）
+
+请求体：
+
+```json
+{
+	"reply_content": "您好，今天会发货。"
+}
+```
+
+请求体字段：
+
+| 字段 | 类型 | 必填 | 说明 |
+|---|---|---|---|
+| reply_content | string | 是 | 客服回复内容 |
+
+响应体字段：
+
+| 字段 | 类型 | 必返 | 说明 |
+|---|---|---|---|
+| code | int | 是 | 业务码 |
+| message | string | 是 | 成功时为“回复成功” |
+| data | object/null | 是 | 留言详情（结构同 7.2 返回 data） |
+
+状态码：`200/400/401/403`
+
+失败场景（示例）：
+
+- `reply_content 必填`
+- `forbidden`
 
 ## 8. Auth（用户认证）API
 

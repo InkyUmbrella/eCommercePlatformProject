@@ -1,5 +1,6 @@
 from rest_framework.decorators import api_view, permission_classes
-from rest_framework.permissions import AllowAny
+from rest_framework.permissions import AllowAny, IsAuthenticated
+from django.shortcuts import get_object_or_404
 
 from common.response import ok, fail
 from .models import SupportMessage
@@ -43,3 +44,20 @@ def support_messages(request):
 	)
 
 	return ok(_serialize_message(item), "留言提交成功")
+
+
+@api_view(["PATCH"])
+@permission_classes([IsAuthenticated])
+def support_reply(request, message_id):
+	if not request.user.is_staff:
+		return fail("forbidden", http_status=403)
+
+	reply_content = str(request.data.get("reply_content", "")).strip()
+	if not reply_content:
+		return fail("reply_content 必填", http_status=400)
+
+	item = get_object_or_404(SupportMessage, id=message_id)
+	item.reply_content = reply_content
+	item.save(update_fields=["reply_content", "is_replied", "replied_at", "updated_at"])
+
+	return ok(_serialize_message(item), "回复成功")

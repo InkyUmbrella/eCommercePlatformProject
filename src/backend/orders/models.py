@@ -2,7 +2,7 @@ from django.db import models
 from django.contrib.auth.models import User
 
 from users.models import Address
-
+from products.models import Product
 
 class Order(models.Model):
     STATUS_CHOICES = (
@@ -50,7 +50,7 @@ class Order(models.Model):
 
 class OrderItem(models.Model):
     order = models.ForeignKey(Order, on_delete=models.CASCADE, related_name='order_items')
-    product = models.ForeignKey('products.Product', on_delete=models.CASCADE)
+    product = models.ForeignKey(Product, on_delete=models.CASCADE)
     quantity = models.PositiveIntegerField(default=1)
     price = models.DecimalField(max_digits=10, decimal_places=2)
 

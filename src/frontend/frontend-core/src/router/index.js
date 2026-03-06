@@ -2,7 +2,7 @@ import { createRouter, createWebHistory } from 'vue-router'
 import Register from '@/views/Register.vue' // 注册页
 import Login from '@/views/Login.vue' // 登录页
 import Home from '@/views/Home.vue' 
-import ProductList from '../views/ProductList.vue'
+import ProductList from '@/views/ProductList.vue'
 const routes = [
   {
     path: '/',          // 首页的路径
@@ -19,7 +19,6 @@ const routes = [
     name: 'Login',
     component: Login
   },
-  
   { 
     path: '/products', 
     name: 'product-list', 

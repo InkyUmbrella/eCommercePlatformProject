@@ -16,6 +16,8 @@
 - 购物车：`/api/cart/`
 - 订单：`/api/orders/`
 - 支付：`/api/paymentorders/<order_id>/pay/`（按当前路由配置实际拼接结果）
+	- 说明：当前项目在主路由使用 `path("api/payment", include("payment.urls"))`，子路由为 `orders/<order_id>/pay/`，因此最终路径会拼接为 `paymentorders`（无 `/`）。
+	- 建议：后续将主路由改为 `api/payment/` 以统一可读性。
 - 客服：`/api/support/`
 - 用户：`/api/users/`
 - 商品：`/api/products/`（草案，待实现）
@@ -306,31 +308,31 @@
 
 ## 4. 订单 API
 
-### 4.1 下单确认
+### 4.0 订单状态流转（统一约定）
+
+当前模型状态值（`orders.models.Order.STATUS_CHOICES`）：
+
+- `pending_payment`：待支付
+- `pending_shipment`：待发货
+- `pending_receipt`：待收货
+- `completed`：已完成
+- `cancelled`：已取消
+
+推荐主流程：`pending_payment -> pending_shipment -> pending_receipt -> completed`
+
+### 4.1 下单确认（已实现）
 
 - 方法：`POST`
 - 路径：`/api/orders/confirm/`
 - 鉴权：**是**（需 Bearer Token）
 
-请求体：
+请求体：无
 
-```json
-{
-	"address_id": 1,
-	"note": "请尽快发货"
-}
-```
+说明：
 
-校验：
-
-- `address_id` 必填
-
-请求体字段：
-
-| 字段 | 类型 | 必填 | 说明 |
-|---|---|---|---|
-| address_id | int | 是 | 收货地址 ID |
-| note | string | 否 | 订单备注，默认空字符串 |
+- 读取“当前用户已勾选”的购物车项并汇总金额。
+- 返回默认地址、地址列表、勾选商品明细、金额汇总。
+- 若勾选商品为空或库存/上架状态异常，返回失败。
 
 响应体字段：
 
@@ -339,15 +341,29 @@
 | code | int | 是 | 业务码 |
 | message | string | 是 | 响应消息 |
 | data | object/null | 是 | 业务数据 |
-| data.address_id | int | 否 | 收货地址 ID |
-| data.note | string | 否 | 订单备注 |
+| data.default_address | object/null | 否 | 默认地址（可能为空） |
+| data.addresses | array<object> | 否 | 地址列表（按默认+倒序） |
+| data.items | array<object> | 否 | 勾选购物车项列表 |
+| data.items[].cart_item_id | int | 否 | 购物车项 ID |
+| data.items[].product_id | int | 否 | 商品 ID |
+| data.items[].title | string | 否 | 商品标题 |
+| data.items[].price | string(decimal) | 否 | 商品单价 |
+| data.items[].quantity | int | 否 | 数量 |
+| data.items[].stock | int | 否 | 当前库存 |
+| data.items[].subtotal | string(decimal) | 否 | 当前项小计 |
 | data.items_amount | string(decimal) | 否 | 商品总金额 |
-| data.shipping_fee | string(decimal) | 否 | 运费 |
+| data.shipping_fee | string(decimal) | 否 | 运费（当前固定 `0.00`） |
 | data.pay_amount | string(decimal) | 否 | 应付金额 |
 
 状态码：`200/400/401`
 
-### 4.2 创建订单
+失败场景（示例）：
+
+- `no selected cart items`
+- `product is inactive`
+- `insufficient stock`
+
+### 4.2 创建订单（已实现）
 
 - 方法：`POST`
 - 路径：`/api/orders/`
@@ -365,38 +381,109 @@
 
 | 字段 | 类型 | 必填 | 说明 |
 |---|---|---|---|
-| address_id | int | 是 | 收货地址 ID |
+| address_id | int | 是 | 当前用户收货地址 ID |
 
 响应体字段：
 
 | 字段 | 类型 | 必返 | 说明 |
 |---|---|---|---|
 | code | int | 是 | 业务码 |
-| message | string | 是 | 成功时通常为“下单成功” |
+| message | string | 是 | 成功时为 `order created` |
 | data | object/null | 是 | 业务数据 |
 | data.order_id | int | 否 | 订单 ID |
-| data.order_no | string | 否 | 订单号 |
-| data.status | string | 否 | 订单状态，示例 `PENDING_PAY` |
+| data.order_no | string | 否 | 订单号（格式 `ORD{order_id:08d}`） |
+| data.status | string | 否 | 初始状态，固定为 `pending_payment` |
+| data.items_amount | string(decimal) | 否 | 商品总金额 |
+| data.shipping_fee | string(decimal) | 否 | 运费（当前固定 `0.00`） |
+| data.pay_amount | string(decimal) | 否 | 应付金额 |
 
-状态码：`200/400/401`
+状态码：`200/400/401/404`
 
-响应示例：
+失败场景（示例）：
+
+- `address_id is required`
+- `no selected cart items`
+- `product is inactive`
+- `insufficient stock`
+
+### 4.3 订单发货（待实现，先定义契约）
+
+> 当前后端代码尚未暴露发货路由；以下为联调建议契约。
+
+- 方法：`POST`
+- 路径：`/api/orders/{order_id}/ship/`
+- 鉴权：**是**（建议仅管理员/运营可调用）
+
+请求体（建议）：
+
+```json
+{
+	"express_company": "SF",
+	"express_no": "SF1234567890"
+}
+```
+
+前置状态：
+
+- 仅允许 `pending_shipment -> pending_receipt`
+
+成功响应建议：
 
 ```json
 {
 	"code": 0,
-	"message": "下单成功",
+	"message": "order shipped",
 	"data": {
 		"order_id": 10001,
-		"order_no": "ORD202603010001",
-		"status": "PENDING_PAY"
+		"status_before": "pending_shipment",
+		"status_after": "pending_receipt",
+		"express_company": "SF",
+		"express_no": "SF1234567890"
 	}
 }
 ```
 
+### 4.4 确认收货（待实现，先定义契约）
+
+> 当前后端代码尚未暴露确认收货路由；以下为联调建议契约。
+
+- 方法：`POST`
+- 路径：`/api/orders/{order_id}/receive/`
+- 鉴权：**是**（建议仅下单用户本人可调用）
+
+请求体：无
+
+前置状态：
+
+- 仅允许 `pending_receipt -> completed`
+
+成功响应建议：
+
+```json
+{
+	"code": 0,
+	"message": "order received",
+	"data": {
+		"order_id": 10001,
+		"status_before": "pending_receipt",
+		"status_after": "completed"
+	}
+}
+```
+
+### 4.5 订单查询与取消（待补充实现）
+
+当前文档已覆盖“确认下单、创建订单、发货契约、确认收货契约”，但以下常用能力在后端路由中尚未实现：
+
+- 订单列表：`GET /api/orders/`
+- 订单详情：`GET /api/orders/{order_id}/`
+- 取消订单：`POST /api/orders/{order_id}/cancel/`
+
+建议在后续迭代补齐后，再补充对应字段表与错误码（如 `order not found`、`order status invalid`）。
+
 ## 5. 支付 API
 
-### 5.1 订单支付
+### 5.1 订单支付（已实现，模拟）
 
 - 方法：`POST`
 - 路径：`/api/paymentorders/{order_id}/pay/`
@@ -415,11 +502,11 @@
 | 字段 | 类型 | 必返 | 说明 |
 |---|---|---|---|
 | code | int | 是 | 业务码 |
-| message | string | 是 | 成功时通常为“支付成功” |
+| message | string | 是 | 成功时为 `支付成功` |
 | data | object/null | 是 | 业务数据 |
 | data.order_id | int | 否 | 订单 ID |
-| data.status_before | string | 否 | 支付前状态 |
-| data.status_after | string | 否 | 支付后状态 |
+| data.status_before | string | 否 | 支付前状态（当前固定 `PENDING_PAY`） |
+| data.status_after | string | 否 | 支付后状态（当前固定 `PENDING_SHIP`） |
 
 状态码：`200/401`
 
@@ -436,6 +523,12 @@
 	}
 }
 ```
+
+### 5.2 支付接口注意事项（当前实现）
+
+- 当前为 Day1 模拟接口：**不校验订单归属、不校验订单真实状态、不落库更新订单状态**。
+- 返回状态值为大写 `PENDING_*`，与订单模型中的小写蛇形值（如 `pending_payment`）暂不一致。
+- 联调阶段建议以前端“支付成功提示 + 订单刷新兜底”处理；后续应替换为真实支付回调与状态落库。
 
 ## 6. 客服留言最小闭环说明
 

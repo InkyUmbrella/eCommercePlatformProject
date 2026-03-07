@@ -5,7 +5,8 @@ import Home from '@/views/Home.vue'
 import ProductList from '@/views/ProductList.vue'
 import ProductDetail from '@/views/ProductDetail.vue'
 import AddressEdit from '@/views/AddressEdit.vue'
-import Support from '@/views/Support.vue';
+import Support from '@/views/Support.vue'
+import Cart from '@/views/Cart.vue'
 const routes = [
   
   {
@@ -43,6 +44,11 @@ const routes = [
     path: '/support',
     name: 'Support',
     component: Support
+  },
+  {
+    path: '/cart',
+    name: 'Cart',
+    component: Cart 
   }
 ]
 

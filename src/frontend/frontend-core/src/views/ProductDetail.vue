@@ -22,6 +22,10 @@
         <img src="@/assets/hello-kitty.jpg" alt="用户头像" class="avatar">
       </div>
     </header>
+    <!-- ✅ 新增：成功加入购物车提示条（3秒自动消失） -->
+    <div class="success-tip" v-if="showSuccessTip">
+      ✅ 成功加入购物车！
+    </div>
 
     <!-- 商品详情主体 -->
     <div class="product-detail-main">
@@ -112,9 +116,12 @@
 <script setup>
 import { ref, computed, onMounted } from 'vue';  
 import { useRouter,useRoute } from 'vue-router';
+import { useCartStore } from '@/store/cartStore';
 
 const router = useRouter();
 const route = useRoute(); 
+const cartStore = useCartStore()
+
 // 跳转到地址修改页（可传递地址ID）
 const goToAddressEdit = () => {
   router.push({
@@ -122,6 +129,30 @@ const goToAddressEdit = () => {
     query: { addressId: '1001' } // 传递要修改的地址ID
   });
 };
+const addToCart = () => {
+  // 1. 组装要加入的商品数据
+  const product = {
+    id: productData.value.id,
+    name: productData.value.name,
+    price: Number(productData.value.price), // 转数字避免计算错误
+    quantity: quantity.value,
+    image: productData.value.image
+  }
+  
+  // 2. 调用 store 的加入购物车方法
+  cartStore.addToCart(product)
+  
+  // 3. 显示成功提示（3秒后消失）
+  showSuccessTip.value = true
+  setTimeout(() => {
+    showSuccessTip.value = false
+  }, 3000)
+  
+  // 可选：提示用户
+  alert(`已将 ${productData.value.name} ×${quantity.value} 加入购物车！`)
+}
+
+
 // ✅ 1. 接收路由参数 - 同时兼容props和route.params（双重保障）
 const props = defineProps({
   productId: {
@@ -214,15 +245,24 @@ const increaseQuantity = () => {
   }
 };
 
-// 操作按钮
-const addToCart = () => {
-  alert(`已将 ${productData.value.name} ×${quantity.value} 加入购物车`);
-};
+
 const buyNow = () => {
   router.push('/checkout'); // 跳转到结算页
 };
-const goHome = () => {
+const goToHome = () => {
   router.push('/home');
+};
+
+const goToCart = () => {
+  router.push('/cart'); 
+};
+
+const goToOrders = () => {
+  router.push('/orders'); 
+};
+
+const goToProfile = () => {
+  router.push('/profile'); 
 };
 // 新增：跳转到留言板页面
 const goToSupport = () => {
@@ -626,6 +666,21 @@ const serviceList = ref([
 .btn-text {
   font-size: 12px;
   line-height: 1;
+}
+/* 成功加入购物车提示条 */
+.success-tip {
+  background-color: #e8f5e9;
+  color: #2e7d32;
+  padding: 8px 15px;
+  text-align: center;
+  font-size: 14px;
+  border-radius: 6px;
+  margin: 10px auto;
+  width: 90%;
+  max-width: 800px;
+  box-shadow: 0 2px 6px rgba(46, 125, 50, 0.2);
+  z-index: 99;
+  position: relative;
 }
 
 /* 移动端适配 */

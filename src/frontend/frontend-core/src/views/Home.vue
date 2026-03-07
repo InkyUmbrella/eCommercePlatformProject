@@ -40,8 +40,7 @@
         <button class="nav-btn" @click="goToOrders">📋 订单</button>
 
         <button class="nav-btn" @click="goToProfile">👤 我的</button>
-        <img src="@/assets/hello-kitty.jpg" alt="用户头像" class="avatar"
-        <button class="nav-btn login-btn" @click="goToLogin">登录</button>
+        <img src="@/assets/hello-kitty.jpg" alt="用户头像" class="avatar">
          
       </div>
     </header>
@@ -117,19 +116,19 @@ const handleSearch = () => {
   router.push({ path: '/products', query })
 }
 const goToHome = () => {
-  router.push('/');
+  router.push('/home');
 };
 
 const goToCart = () => {
-  router.push('/cart'); // 假设购物车页面的路径是 /cart
+  router.push('/cart'); 
 };
 
 const goToOrders = () => {
-  router.push('/orders'); // 假设订单页面的路径是 /orders
+  router.push('/orders'); 
 };
 
 const goToProfile = () => {
-  router.push('/profile'); // 假设个人中心页面的路径是 /profile
+  router.push('/profile'); 
 };
 
 // 轮播图核心数据（按设计方案配置）
@@ -356,25 +355,7 @@ onUnmounted(() => {
   object-fit: cover;
   border: 1px solid #ffc0cb;
 }
-.login-btn {
-  background-color: #ff69b4;
-  color: white;
-  border: none;
-  border-radius: 30px;
-  padding: 6px 20px;
-  font-size: 14px;
-  font-weight: 600;
-  cursor: pointer;
-  transition: all 0.3s ease;
-  box-shadow: 0 2px 8px rgba(255, 105, 180, 0.3);
-  margin-left: 10px; /* 与头像保持间距 */
-  white-space: nowrap;
-}
-.login-btn:hover {
-  background-color: #ff1493;
-  transform: translateY(-2px);
-  box-shadow: 0 4px 12px rgba(255, 20, 147, 0.4);
-}
+
 /* 轮播图（图二效果） */
 .carousel {
   position: relative;

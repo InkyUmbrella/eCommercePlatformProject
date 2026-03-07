@@ -41,7 +41,7 @@
         <button class="nav-btn" @click="goToProfile">👤 我的</button>
         
         <img src="@/assets/hello-kitty.jpg" alt="用户头像" class="avatar" />
-        <button class="nav-btn login-btn" @click="goToLogin">登录</button>
+
       </div>
     </header>
 
@@ -63,7 +63,10 @@
 
     <!-- 商品列表 -->
     <div class="product-grid">
-      <div class="product-card" v-for="product in productList" :key="product.id">
+      <div class="product-card" v-for="product in productList" :key="product.id"
+      @click="goToDetail(product.id)" 
+        style="cursor: pointer;" 
+      >
         <div class="product-image">
           <img :src="product.image" :alt="product.name" />
         </div>
@@ -72,7 +75,7 @@
           <p class="product-desc">{{ product.description }}</p>
           <div class="product-footer">
             <span class="product-price">¥{{ product.price }}</span>
-            <button class="favorite-btn" @click="toggleFavorite(product.id)">
+            <button class="favorite-btn" @click.stop="toggleFavorite(product.id)">
               {{ product.isFavorite ? '❤️' : '🤍' }}
             </button>
           </div>
@@ -88,6 +91,13 @@ import { useRoute, useRouter } from 'vue-router';
 
 const route = useRoute();
 const router = useRouter();
+
+const goToDetail = (productId) => {
+  router.push({
+    name: 'ProductDetail', 
+    params: { productId: productId } 
+  });
+};
 
 const goToLogin = () => {
   router.push('/login');
@@ -123,7 +133,7 @@ const handleSearch = () => {
 };
 
 // 导航
-const goToHome = () => router.push('/');
+const goToHome = () => router.push('/home');
 const goToCart = () => router.push('/cart');
 const goToOrders = () => router.push('/orders');
 const goToProfile = () => router.push('/profile');
@@ -344,25 +354,7 @@ const toggleFavorite = (id) => {
   gap: 20px;
   padding: 0 30px 30px;
 }
-.login-btn {
-  background-color: #ff69b4;
-  color: white;
-  border: none;
-  border-radius: 30px;
-  padding: 6px 20px;
-  font-size: 14px;
-  font-weight: 600;
-  cursor: pointer;
-  transition: all 0.3s ease;
-  box-shadow: 0 2px 8px rgba(255, 105, 180, 0.3);
-  margin-left: 10px; /* 与头像保持间距 */
-  white-space: nowrap;
-}
-.login-btn:hover {
-  background-color: #ff1493;
-  transform: translateY(-2px);
-  box-shadow: 0 4px 12px rgba(255, 20, 147, 0.4);
-}
+
 
 /* 商品卡片 */
 .product-card {

@@ -3,16 +3,19 @@ import Register from '@/views/Register.vue' // 注册页
 import Login from '@/views/Login.vue' // 登录页
 import Home from '@/views/Home.vue' 
 import ProductList from '@/views/ProductList.vue'
+import ProductDetail from '@/views/ProductDetail.vue'
+import AddressEdit from '@/views/AddressEdit.vue'
 const routes = [
+  
   {
-    path: '/',          // 首页的路径
-    name: 'Home',
-    component: Home
-  },
-  {
-    path: '/register', // 打开注册页
+    path: '/', // 打开注册页
     name: 'Register',
     component: Register
+  },
+  {
+    path: '/home',          // 首页的路径
+    name: 'Home',
+    component: Home
   },
   {
     path: '/login', // 登录页路由地址
@@ -23,8 +26,20 @@ const routes = [
     path: '/products', 
     name: 'product-list', 
     component: ProductList 
+  },
+  {
+    path: '/product-detail/:productId', 
+    name: 'ProductDetail',
+    component: ProductDetail,
+    props: true 
+  },
+  {
+    path: '/address-edit',
+    name: 'AddressEdit',
+    component: AddressEdit
   }
 ]
+
 const router = createRouter({
   history: createWebHistory(import.meta.env.BASE_URL),
   routes

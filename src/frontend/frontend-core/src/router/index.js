@@ -7,6 +7,9 @@ import ProductDetail from '@/views/ProductDetail.vue'
 import AddressEdit from '@/views/AddressEdit.vue'
 import Support from '@/views/Support.vue'
 import Cart from '@/views/Cart.vue'
+import Checkout from '@/views/Checkout.vue';
+import OrderSuccess from '@/views/OrderSuccess.vue';
+import OrderList from '@/views/OrderList.vue'
 const routes = [
   
   {
@@ -49,6 +52,21 @@ const routes = [
     path: '/cart',
     name: 'Cart',
     component: Cart 
+  },
+  {
+    path: '/checkout',
+    name: 'Checkout',
+    component: Checkout
+  },
+  {
+    path: '/order-success',
+    name: 'OrderSuccess',
+    component: OrderSuccess
+  },
+  {
+    path: '/order-list',
+    name: 'OrderList',
+    component: OrderList
   }
 ]
 

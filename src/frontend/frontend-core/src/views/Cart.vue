@@ -139,14 +139,46 @@ const goBack = () => {
   router.go(-1)
 }
 
-// 去结算
+// ✅ 改造去结算方法（携带订单数据）
 const goToCheckout = () => {
-  if (Number(totalAmount.value) <= 0) {
-    alert('请先选择要结算的商品！')
-    return
+  // 1. 筛选已勾选的商品
+  const selectedItems = cartItems.value.filter(item => item.checked)
+  
+  // 2. 验证：无勾选商品则提示
+  if (selectedItems.length === 0) {
+    alert('请先选择要结算的商品！');
+    return;
   }
-  router.push('/checkout')
-}
+  
+  // 3. 组装订单数据（包含商品列表、总金额、下单时间等）
+  const orderData = {
+    orderId: Date.now(), // 用时间戳模拟订单ID
+    createTime: new Date().toLocaleString(), // 下单时间
+    totalAmount: totalAmount.value, // 总金额（从store获取）
+    items: selectedItems.map(item => ({ // 商品列表（精简字段）
+      id: item.id,
+      name: item.name,
+      price: item.price,
+      quantity: item.quantity,
+      image: item.image,
+      subtotal: (item.price * item.quantity).toFixed(2)
+    })),
+    address: { // 模拟默认收货地址（后续可从地址管理页获取）
+      name: '张三',
+      phone: '13800138000',
+      region: '北京市东城区',
+      detail: '某某小区1号楼2单元301'
+    }
+  };
+  
+  // 4. 跳转到结算页，并携带订单数据（用query传递，复杂数据转JSON）
+  router.push({
+    name: 'Checkout',
+    query: {
+      orderData: JSON.stringify(orderData) // 转JSON避免参数丢失
+    }
+  });
+};
 
 const goToHome = () => {
   router.push('/home');

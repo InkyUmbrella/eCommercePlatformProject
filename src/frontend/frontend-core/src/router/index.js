@@ -5,6 +5,7 @@ import Home from '@/views/Home.vue'
 import ProductList from '@/views/ProductList.vue'
 import ProductDetail from '@/views/ProductDetail.vue'
 import AddressEdit from '@/views/AddressEdit.vue'
+import Support from '@/views/Support.vue';
 const routes = [
   
   {
@@ -37,6 +38,11 @@ const routes = [
     path: '/address-edit',
     name: 'AddressEdit',
     component: AddressEdit
+  },
+  {
+    path: '/support',
+    name: 'Support',
+    component: Support
   }
 ]
 

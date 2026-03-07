@@ -92,6 +92,12 @@
       </div>
     </div>
 
+    <!-- 新增：右下角悬浮留言板按钮 -->
+    <div class="cloud-service-btn" @click="goToSupport">
+      <span class="btn-icon">📝</span>
+      <span class="btn-text">商城客服</span>
+    </div>
+
     <!-- 底部导航 -->
     <footer class="footer">
       <div class="footer-content">
@@ -218,7 +224,17 @@ const buyNow = () => {
 const goHome = () => {
   router.push('/home');
 };
-
+// 新增：跳转到留言板页面
+const goToSupport = () => {
+  if (!productData.value.id) {
+    alert('商品信息加载中，请稍后...');
+    return;
+  }
+  router.push({
+    name: 'Support',
+    query: { productId: productData.value.id }
+  });
+};
 // 服务保障数据
 const serviceList = ref([
   { id: 1, icon: '❤️', title: '品质保障', desc: '精选优质美妆' },
@@ -557,7 +573,74 @@ const serviceList = ref([
   font-size: 12px;
   color: #999;
 }
+/* 云朵形状悬浮按钮（上移至底部80px） */
+.cloud-service-btn {
+  position: fixed;
+  right: 20px;
+  bottom: 80px; /* 保持上移位置，可按需调整 */
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 8px; /* 图标和文字的间距 */
+  /* 云朵形状核心：不规则圆角+宽高比 */
+  width: 120px; 
+  height: 60px;
+  border-radius: 30px 30px 20px 30px; /* 左上/右上/右下/左下，模拟云朵弧度 */
+  /* 粉色渐变底色，比纯色更有层次感 */
+  background: linear-gradient(135deg, #ff87b8 0%, #ff69b4 100%);
+  box-shadow: 0 6px 16px rgba(255, 105, 180, 0.4);
+  color: #fff;
+  cursor: pointer;
+  z-index: 999;
+  transition: all 0.3s ease;
+  /* 云朵小细节：加一个"小凸起"模拟云朵轮廓 */
+  position: relative;
+}
+/* 云朵右侧小凸起 */
+.cloud-service-btn::after {
+  content: '';
+  position: absolute;
+  right: 15px;
+  top: -10px;
+  width: 20px;
+  height: 20px;
+  border-radius: 50%;
+  background: linear-gradient(135deg, #ff87b8 0%, #ff69b4 100%);
+  box-shadow: 0 2px 8px rgba(255, 105, 180, 0.2);
+}
+/* 悬浮动效：轻微放大+阴影加深+小凸起同步变化 */
+.cloud-service-btn:hover {
+  transform: scale(1.05);
+  box-shadow: 0 8px 20px rgba(255, 105, 180, 0.5);
+}
+.cloud-service-btn:hover::after {
+  transform: scale(1.1);
+  right: 12px;
+  top: -12px;
+}
 
+.btn-icon {
+  font-size: 24px;
+  margin-bottom: 2px;
+}
+.btn-text {
+  font-size: 12px;
+  line-height: 1;
+}
+
+/* 移动端适配 */
+@media (max-width: 768px) {
+  .message-board-btn {
+    width: 50px;
+    height: 50px;
+  }
+  .btn-icon {
+    font-size: 20px;
+  }
+  .btn-text {
+    font-size: 10px;
+  }
+}
 /* 响应式适配 */
 @media (max-width: 992px) {
   .product-detail-main {

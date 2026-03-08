@@ -1,6 +1,29 @@
+# 接口测试
 .postman/
 postman/environments/
 postman/globals/
+# 虚拟环境
+src/backend/.env
 
+# 编辑器配置
+.vscode/*
+!.vscode/extensions.json
+.DS_Store
 .vs/
 .idea/
+# 迁移产生的二进制文件
+__pycache__/
+*.pyc
+*.pyo
+# 前端依赖与构建产物
+node_modules/
+dist/
+build/
+*.local
+
+# 日志文件
+*.log
+npm-debug.log*
+yarn-debug.log*
+yarn-error.log*
+pnpm-debug.log*

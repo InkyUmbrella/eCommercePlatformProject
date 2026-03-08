@@ -1,0 +1,17 @@
+﻿$kind: http-request
+name: 3. Update Address
+url: "{{base_url}}/api/users/addresses/{{address_id}}/"
+method: PATCH
+headers:
+  Content-Type: application/json
+  Authorization: Bearer {{access_token}}
+body:
+  type: text
+  content: |-
+    {
+      "name": "测试收货人-更新",
+      "address": "山东省青岛市崂山区YY路2号",
+      "phone_number": "13900000000",
+      "is_default": false
+    }
+order: 3000

@@ -1,0 +1,29 @@
+$kind: http-request
+url: "{{base_url}}/api/users/refresh/"
+method: POST
+headers:
+  Content-Type: application/json
+body:
+  type: text
+  content: |-
+    {
+      "refresh": "{{refresh_token}}"
+    }
+scripts:
+  - type: afterResponse
+    code: |-
+      pm.test('Status code is 200', function () {
+          pm.response.to.have.status(200);
+      });
+
+      let jsonData = {};
+      try {
+          jsonData = pm.response.json();
+      } catch (e) {
+          jsonData = {};
+      }
+
+      const access = jsonData?.data?.access;
+      if (access) pm.collectionVariables.set('access_token', access);
+    language: text/javascript
+order: 3000

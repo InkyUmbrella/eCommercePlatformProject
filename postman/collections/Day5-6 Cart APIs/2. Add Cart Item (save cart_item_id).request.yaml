@@ -1,0 +1,28 @@
+﻿$kind: http-request
+name: 2. Add Cart Item (save cart_item_id)
+url: "{{base_url}}/api/cart/items/"
+method: POST
+headers:
+  Content-Type: application/json
+  Authorization: Bearer {{access_token}}
+body:
+  type: text
+  content: |-
+    {
+      "product_id": {{product_id}},
+      "quantity": 1
+    }
+scripts:
+  - type: afterResponse
+    language: text/javascript
+    code: |-
+      let jsonData = {};
+      try {
+          jsonData = pm.response.json();
+      } catch (e) {
+          jsonData = {};
+      }
+
+      const id = jsonData?.data?.item?.id;
+      if (id) pm.collectionVariables.set('cart_item_id', String(id));
+order: 2000

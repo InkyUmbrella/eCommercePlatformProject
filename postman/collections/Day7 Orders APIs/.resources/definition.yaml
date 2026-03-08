@@ -1,0 +1,7 @@
+﻿$kind: collection
+description: "Day7 for 分工1: order confirm + create"
+variables:
+  base_url: http://127.0.0.1:8000
+  access_token: ""
+  address_id: ""
+  order_id: ""

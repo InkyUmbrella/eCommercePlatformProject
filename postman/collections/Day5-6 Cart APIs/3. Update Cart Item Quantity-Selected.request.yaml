@@ -1,0 +1,15 @@
+﻿$kind: http-request
+name: 3. Update Cart Item Quantity/Selected
+url: "{{base_url}}/api/cart/items/{{cart_item_id}}/"
+method: PATCH
+headers:
+  Content-Type: application/json
+  Authorization: Bearer {{access_token}}
+body:
+  type: text
+  content: |-
+    {
+      "quantity": 2,
+      "selected": true
+    }
+order: 3000

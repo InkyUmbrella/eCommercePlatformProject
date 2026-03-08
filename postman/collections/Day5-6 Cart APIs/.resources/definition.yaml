@@ -1,0 +1,7 @@
+﻿$kind: collection
+description: "Day5-6 for 分工1: cart CRUD + multi-select"
+variables:
+  base_url: http://127.0.0.1:8000
+  access_token: ""
+  product_id: ""
+  cart_item_id: ""

@@ -26,8 +26,12 @@ urlpatterns = [
     path("api/orders/", include("orders.urls")),
     path("api/payment", include("payment.urls")),
     path("api/users/", include("users.urls")),
+<<<<<<< HEAD
     path('api/products/', include('products.urls')),
     path('api/marketing/', include('marketing.urls')),
+=======
+    path("api/support/", include("common.urls")),
+>>>>>>> 0d03b2c78265cc58904a79358f2c4589065c11f0
 ]
 
 if settings.DEBUG:

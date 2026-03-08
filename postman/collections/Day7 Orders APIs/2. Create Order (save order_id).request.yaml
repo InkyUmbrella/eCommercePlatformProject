@@ -1,0 +1,27 @@
+﻿$kind: http-request
+name: 2. Create Order (save order_id)
+url: "{{base_url}}/api/orders/"
+method: POST
+headers:
+  Content-Type: application/json
+  Authorization: Bearer {{access_token}}
+body:
+  type: text
+  content: |-
+    {
+      "address_id": {{address_id}}
+    }
+scripts:
+  - type: afterResponse
+    language: text/javascript
+    code: |-
+      let jsonData = {};
+      try {
+          jsonData = pm.response.json();
+      } catch (e) {
+          jsonData = {};
+      }
+
+      const id = jsonData?.data?.order_id;
+      if (id) pm.collectionVariables.set('order_id', String(id));
+order: 2000

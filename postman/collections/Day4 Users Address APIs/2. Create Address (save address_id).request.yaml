@@ -1,0 +1,30 @@
+﻿$kind: http-request
+name: 2. Create Address (save address_id)
+url: "{{base_url}}/api/users/addresses/"
+method: POST
+headers:
+  Content-Type: application/json
+  Authorization: Bearer {{access_token}}
+body:
+  type: text
+  content: |-
+    {
+      "name": "测试收货人",
+      "address": "山东省青岛市市南区XX路1号",
+      "phone_number": "13800000000",
+      "is_default": true
+    }
+scripts:
+  - type: afterResponse
+    language: text/javascript
+    code: |-
+      let jsonData = {};
+      try {
+          jsonData = pm.response.json();
+      } catch (e) {
+          jsonData = {};
+      }
+
+      const id = jsonData?.data?.id;
+      if (id) pm.collectionVariables.set('address_id', String(id));
+order: 2000

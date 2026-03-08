@@ -1,0 +1,14 @@
+﻿$kind: http-request
+name: 4. Select All Cart Items
+url: "{{base_url}}/api/cart/select-all/"
+method: PATCH
+headers:
+  Content-Type: application/json
+  Authorization: Bearer {{access_token}}
+body:
+  type: text
+  content: |-
+    {
+      "selected": true
+    }
+order: 4000

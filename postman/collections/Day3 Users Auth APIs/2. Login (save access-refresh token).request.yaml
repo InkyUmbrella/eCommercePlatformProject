@@ -1,0 +1,33 @@
+$kind: http-request
+name: 2. Login (save access/refresh token)
+url: "{{base_url}}/api/users/login/"
+method: POST
+headers:
+  Content-Type: application/json
+body:
+  type: text
+  content: |-
+    {
+      "username": "test_user_001",
+      "password": "123456"
+    }
+scripts:
+  - type: afterResponse
+    code: |-
+      pm.test('Status code is 200', function () {
+          pm.response.to.have.status(200);
+      });
+
+      let jsonData = {};
+      try {
+          jsonData = pm.response.json();
+      } catch (e) {
+          jsonData = {};
+      }
+
+      const access = jsonData?.data?.access;
+      const refresh = jsonData?.data?.refresh;
+      if (access) pm.collectionVariables.set('access_token', access);
+      if (refresh) pm.collectionVariables.set('refresh_token', refresh);
+    language: text/javascript
+order: 2000

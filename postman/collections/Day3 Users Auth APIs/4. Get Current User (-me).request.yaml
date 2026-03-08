@@ -1,0 +1,7 @@
+$kind: http-request
+name: 4. Get Current User (/me)
+url: "{{base_url}}/api/users/me/"
+method: GET
+headers:
+  Authorization: Bearer {{access_token}}
+order: 4000

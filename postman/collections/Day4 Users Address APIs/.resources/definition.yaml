@@ -1,0 +1,6 @@
+﻿$kind: collection
+description: "Day4 for 分工1: addresses CRUD + set-default"
+variables:
+  base_url: http://127.0.0.1:8000
+  access_token: ""
+  address_id: ""

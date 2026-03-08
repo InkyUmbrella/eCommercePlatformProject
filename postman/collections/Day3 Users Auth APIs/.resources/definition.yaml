@@ -1,0 +1,6 @@
+$kind: collection
+description: "Day3 for 分工1: register/login/refresh/me"
+variables:
+  base_url: http://127.0.0.1:8000
+  access_token: ""
+  refresh_token: ""

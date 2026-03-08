@@ -1,0 +1,7 @@
+﻿$kind: http-request
+name: 4. Set Default Address
+url: "{{base_url}}/api/users/addresses/{{address_id}}/set-default/"
+method: POST
+headers:
+  Authorization: Bearer {{access_token}}
+order: 4000

@@ -1,0 +1,67 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <meta charset="UTF-8">
+    <title>发货单</title>
+    <style>
+        body { font-family: Arial, sans-serif; }
+        .label-page {
+            width: 100%;
+            margin: 0 auto;
+            padding: 20px;
+        }
+        .label {
+            border: 1px solid #000;
+            padding: 15px;
+            margin-bottom: 20px;
+            page-break-inside: avoid;
+        }
+        .header {
+            text-align: center;
+            font-size: 20px;
+            font-weight: bold;
+            margin-bottom: 10px;
+            border-bottom: 2px solid #000;
+            padding-bottom: 5px;
+        }
+        .info {
+            margin: 10px 0;
+        }
+        .info-row {
+            margin: 5px 0;
+        }
+        .label strong {
+            display: inline-block;
+            width: 100px;
+        }
+        .qr-code {
+            text-align: right;
+            margin-top: 10px;
+            font-size: 12px;
+            color: #666;
+        }
+    </style>
+</head>
+<body>
+    <div class="label-page">
+        {% for order in orders %}
+        <div class="label">
+            <div class="header">发货单</div>
+            <div class="info">
+                <div class="info-row"><strong>订单号：</strong>ORD{{ order.id|stringformat:"08d" }}</div>
+                <div class="info-row"><strong>收货人：</strong>{{ order.address.name }}</div>
+                <div class="info-row"><strong>联系电话：</strong>{{ order.address.phone_number }}</div>
+                <div class="info-row"><strong>收货地址：</strong>{{ order.address.address }}</div>
+                <div class="info-row"><strong>物流公司：</strong>{{ order.get_shipping_company_display }}</div>
+                <div class="info-row"><strong>物流单号：</strong>{{ order.shipping_code }}</div>
+                <div class="info-row"><strong>发货时间：</strong>{{ order.shipping_time|date:"Y-m-d H:i" }}</div>
+                <div class="info-row"><strong>备注：</strong>{{ order.shipping_remark|default:"无" }}</div>
+            </div>
+            <div class="qr-code">
+                扫码查单
+            </div>
+        </div>
+        {% endfor %}
+    </div>
+</body>
+</html>

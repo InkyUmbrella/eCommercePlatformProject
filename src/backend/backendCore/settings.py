@@ -49,9 +49,11 @@ INSTALLED_APPS = [
     'orders',
     'payment',
     'marketing',
+    'corsheaders',
 ]
 
 MIDDLEWARE = [
+    'corsheaders.middleware.CorsMiddleware',
     'django.middleware.security.SecurityMiddleware',
     'django.contrib.sessions.middleware.SessionMiddleware',
     'django.middleware.common.CommonMiddleware',
@@ -170,3 +172,13 @@ SIMPLE_JWT = {
     "REFRESH_TOKEN_LIFETIME": timedelta(days=7),
     "AUTH_HEADER_TYPES": ("Bearer",),
 }
+
+# 开发环境下允许所有来源
+CORS_ALLOW_ALL_ORIGINS = True  # 仅开发环境使用
+
+# 或者指定允许的前端地址
+CORS_ALLOWED_ORIGINS = [
+    "http://localhost:5173",  # Vite 默认端口
+    "http://127.0.0.1:5173",
+    "http://localhost:3000",  # 其他可能的前端端口
+]

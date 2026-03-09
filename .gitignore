@@ -3,6 +3,8 @@
 postman/environments/
 postman/globals/
 # 虚拟环境
+.venv/
+src/backend/.venv
 src/backend/.env
 
 # 编辑器配置

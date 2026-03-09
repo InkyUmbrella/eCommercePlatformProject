@@ -11,6 +11,7 @@ class Order(models.Model):
     ('pending_receipt','待收货'),
     ('completed','已完成'),
     ('cancelled','已取消'),
+    ('refund_processing','售后中')
     )
 
     user = models.ForeignKey(User, on_delete=models.CASCADE,related_name='orders')
@@ -24,11 +25,12 @@ class Order(models.Model):
 
     # 定义状态转换规则
     STATUS_TRANSITIONS = {
-        'pending_payment': ['pending_shipment', 'cancelled'],      # 待支付 -> 待发货 或 已取消
-        'pending_shipment': ['pending_receipt', 'cancelled'],     # 待发货 -> 待收货 或 已取消
-        'pending_receipt': ['completed', 'cancelled'],   # 待收货 -> 已完成 或 已取消
-        'completed': [],                          # 已完成不能再转其他状态
-        'cancelled': [],                          # 已取消不能再转其他状态
+        'pending_payment': ['pending_shipment', 'cancelled'],    # 待支付 -> 待发货 或 已取消
+        'pending_shipment': ['pending_receipt', 'cancelled'],    # 待发货 -> 待收货 或 已取消
+        'pending_receipt': ['completed', 'refund_processing'],   # 待收货 -> 已完成 或 售后中
+        'completed': ['refund_processing'],                      # 已完成 -> 售后中
+        'cancelled': [],                                         # 已取消不能再转其他状态
+        'refund_processing': ['completed', 'cancelled']          # 售后中 -> 已完成 或 已取消
     }
 
     def change_status(self, new_status):

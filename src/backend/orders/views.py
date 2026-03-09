@@ -11,6 +11,10 @@ from orders.models import Order, OrderItem
 from users.models import Address
 
 
+class OrderCreateError(Exception):
+    pass
+
+
 def _serialize_address(address):
     return {
         "id": address.id,
@@ -40,6 +44,14 @@ def _selected_cart_items(user):
         .select_related("product")
         .order_by("-id")
     )
+
+
+def _serialize_order_status(order, status_before):
+    return {
+        "order_id": order.id,
+        "status_before": status_before,
+        "status_after": order.status,
+    }
 
 
 @api_view(["POST"])
@@ -89,39 +101,42 @@ def order_create(request):
     if not selected_items:
         return fail("no selected cart items", http_status=400)
 
-    with transaction.atomic():
-        for item in selected_items:
-            product = item.product
-            product.refresh_from_db(fields=["stock", "is_active"])
-            if not product.is_active:
-                return fail("product is inactive", http_status=400)
-            if item.quantity > product.stock:
-                return fail("insufficient stock", http_status=400)
+    try:
+        with transaction.atomic():
+            for item in selected_items:
+                product = item.product
+                product.refresh_from_db(fields=["stock", "is_active"])
+                if not product.is_active:
+                    raise OrderCreateError("product is inactive")
+                if item.quantity > product.stock:
+                    raise OrderCreateError("insufficient stock")
 
-        order = Order.objects.create(
-            user=user,
-            address=address,
-            status="pending_payment",
-        )
-
-        order_items = []
-        items_amount = Decimal("0.00")
-        for item in selected_items:
-            product = item.product
-            items_amount += product.price * item.quantity
-            order_items.append(
-                OrderItem(
-                    order=order,
-                    product=product,
-                    quantity=item.quantity,
-                    price=product.price,
-                )
+            order = Order.objects.create(
+                user=user,
+                address=address,
+                status='pending_payment',
             )
-            product.stock = product.stock - item.quantity
-            product.save(update_fields=["stock"])
 
-        OrderItem.objects.bulk_create(order_items)
-        CartItem.objects.filter(id__in=[item.id for item in selected_items]).delete()
+            order_items = []
+            items_amount = Decimal("0.00")
+            for item in selected_items:
+                product = item.product
+                items_amount += product.price * item.quantity
+                order_items.append(
+                    OrderItem(
+                        order=order,
+                        product=product,
+                        quantity=item.quantity,
+                        price=product.price,
+                    )
+                )
+                product.stock = product.stock - item.quantity
+                product.save(update_fields=["stock"])
+
+            OrderItem.objects.bulk_create(order_items)
+            CartItem.objects.filter(id__in=[item.id for item in selected_items]).delete()
+    except OrderCreateError as exc:
+        return fail(str(exc), http_status=400)
 
     shipping_fee = Decimal("0.00")
     pay_amount = items_amount + shipping_fee
@@ -134,3 +149,72 @@ def order_create(request):
         "shipping_fee": str(shipping_fee),
         "pay_amount": str(pay_amount),
     }, "order created")
+
+
+@api_view(["POST"])
+@permission_classes([IsAuthenticated])
+def order_pay(request, order_id):
+    order = get_object_or_404(Order, id=order_id, user=request.user)
+    if order.status != 'pending_payment':
+        return fail("only pending_payment can be paid", http_status=400)
+
+    status_before = order.status
+    order.change_status('pending_shipment')
+    return ok(_serialize_order_status(order, status_before), "order has paid")
+
+
+@api_view(["POST"])
+@permission_classes([IsAuthenticated])
+def order_cancel(request, order_id):
+    order = get_object_or_404(Order, id=order_id, user=request.user)
+    cancellable_statuses = {
+        'pending_payment',
+        'pending_shipment',
+        'refund_processing',
+    }
+    if order.status not in cancellable_statuses:
+        return fail("current status cannot be cancelled", http_status=400)
+
+    status_before = order.status
+    order.change_status('cancelled')
+    return ok(_serialize_order_status(order, status_before), "order cancelled")
+
+
+@api_view(["POST"])
+@permission_classes([IsAuthenticated])
+def order_confirm_receive(request, order_id):
+    order = get_object_or_404(Order, id=order_id, user=request.user)
+    if order.status != 'pending_receipt':
+        return fail("only pending_receipt can be confirmed", http_status=400)
+
+    status_before = order.status
+    order.change_status('completed')
+    return ok(_serialize_order_status(order, status_before), "order completed")
+
+
+@api_view(["POST"])
+@permission_classes([IsAuthenticated])
+def order_refund(request, order_id):
+    order = get_object_or_404(Order, id=order_id, user=request.user)
+    refundable_statuses = {
+        'pending_receipt',
+        'completed',
+    }
+    if order.status not in refundable_statuses:
+        return fail("current status cannot start refund", http_status=400)
+
+    status_before = order.status
+    order.change_status('refund_processing')
+    return ok(_serialize_order_status(order, status_before), "refund processing started")
+
+
+@api_view(["POST"])
+@permission_classes([IsAuthenticated])
+def order_refund_complete(request, order_id):
+    order = get_object_or_404(Order, id=order_id, user=request.user)
+    if order.status != 'refund_processing':
+        return fail("only refund_processing can be completed", http_status=400)
+
+    status_before = order.status
+    order.change_status('completed')
+    return ok(_serialize_order_status(order, status_before), "refund processing completed")

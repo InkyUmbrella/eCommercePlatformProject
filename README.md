@@ -1,4 +1,4 @@
-# 电商平台项目（Ecommerce Platform）
+# 电商平台项目（eCommerce Platform）
 
 一个前后端分离的电商平台示例项目：
 

@@ -1,5 +1,5 @@
 <template>
-  <div class="checkout-container">
+  <div class="checkout-container"v-if="orderData.address && orderData.items">
     <!-- 顶部导航 -->
     <header class="header">
       <button class="back-btn" @click="goBack">← 返回购物车</button>
@@ -79,6 +79,7 @@
       <button class="submit-btn" @click="submitOrder">提交订单</button>
     </div>
   </div>
+   <div v-else class="loading">加载订单数据中...</div>
 </template>
 
 <script setup>
@@ -98,18 +99,30 @@ const paymentMethod = ref('wechat');
 // 初始化：解析订单数据
 onMounted(() => {
   try {
-    // 解析URL中的订单数据（JSON转对象）
-    const rawData = route.query.orderData;
-    if (rawData) {
-      orderData.value = JSON.parse(rawData);
+    // 从 sessionStorage 读取订单数据
+    const stored = sessionStorage.getItem('checkoutOrder');
+    if (stored) {
+      const parsed = JSON.parse(stored);
+      // 如果地址缺失，补充默认地址（保险）
+      if (!parsed.address) {
+        parsed.address = {
+          name: '张三',
+          phone: '13800138000',
+          region: '北京市东城区',
+          detail: '某某小区1号楼2单元301'
+        };
+      }
+      orderData.value = parsed;
+      // 可选：读取后立即清除，防止刷新页面重复提交（但保留一次即可）
+      // sessionStorage.removeItem('checkoutOrder');
     } else {
-      // 无订单数据，跳回购物车
-      alert('订单数据异常，请重新结算！');
-      router.push('/shopping-cart');
+      alert('订单数据不存在，请重新结算！');
+      router.push('/cart');
     }
   } catch (e) {
-    alert('订单数据解析失败！');
-    router.push('/shopping-cart');
+    console.error('订单数据解析失败', e);
+    alert('订单数据解析失败，请重新结算！');
+    router.push('/cart');
   }
 });
 
@@ -120,11 +133,17 @@ const goBack = () => {
 
 // 跳转到地址修改页
 const goToAddressEdit = () => {
-  router.push('/address-edit');
+  router.push({
+    path: '/address-edit',
+    query: { redirect: '/checkout' }
+  });
 };
 
 // 提交订单（核心结算功能）
 const submitOrder = () => {
+  
+  const settledIds = orderData.value.items.map(item => item.id);
+  
   // 1. 模拟支付验证（实际项目对接支付接口）
   alert(`
     订单提交成功！
@@ -137,7 +156,7 @@ const submitOrder = () => {
   `);
   
   // 2. 提交成功后：清空购物车中已结算的商品
-  const settledIds = orderData.value.items.map(item => item.id);
+  cartStore.removeItems(settledIds);
   cartStore.cartItems = cartStore.cartItems.filter(item => !settledIds.includes(item.id));
   
   // 3. 跳转到订单成功页（可创建OrderSuccess.vue）
@@ -266,6 +285,12 @@ const submitOrder = () => {
   font-weight: 600;
 }
 
+.loading {
+  text-align: center;
+  padding: 50px;
+  font-size: 16px;
+  color: #999;
+}
 /* 支付方式 */
 .payment-options {
   display: flex;

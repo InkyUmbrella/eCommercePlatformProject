@@ -28,6 +28,7 @@ export const useCartStore = defineStore('cart', {
   
   // 方法（修改状态的逻辑）
   actions: {
+   
     // 加入购物车（核心方法）
     addToCart(product) {
       // 1. 检查商品是否已在购物车中
@@ -74,5 +75,8 @@ export const useCartStore = defineStore('cart', {
         item.checked = !item.checked
       }
     }
-  }
+    // cartStore.js actions 中添加
+    
+}
+  
 })

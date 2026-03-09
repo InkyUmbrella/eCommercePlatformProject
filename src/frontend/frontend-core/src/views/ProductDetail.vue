@@ -121,7 +121,7 @@ import { useCartStore } from '@/store/cartStore';
 const router = useRouter();
 const route = useRoute(); 
 const cartStore = useCartStore()
-
+const showSuccessTip = ref(false);
 // 跳转到地址修改页（可传递地址ID）
 const goToAddressEdit = () => {
   router.push({
@@ -130,13 +130,18 @@ const goToAddressEdit = () => {
   });
 };
 const addToCart = () => {
+   if (!productData.value.id) {
+    alert('商品信息加载中，请稍后...');
+    return;
+  }
   // 1. 组装要加入的商品数据
   const product = {
     id: productData.value.id,
     name: productData.value.name,
     price: Number(productData.value.price), // 转数字避免计算错误
     quantity: quantity.value,
-    image: productData.value.image
+    image: productData.value.image,
+    checked: true
   }
   
   // 2. 调用 store 的加入购物车方法

@@ -22,7 +22,7 @@ const route = useRoute();
 
 // 查看订单列表
 const goToOrderList = () => {
-  router.push('/order-list');
+  router.push('/orders');
 };
 
 // 返回首页

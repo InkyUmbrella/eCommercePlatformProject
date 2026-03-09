@@ -10,6 +10,10 @@ import Cart from '@/views/Cart.vue'
 import Checkout from '@/views/Checkout.vue';
 import OrderSuccess from '@/views/OrderSuccess.vue';
 import OrderList from '@/views/OrderList.vue'
+import AdminLayout from '@/views/admin/Layout.vue'
+import BeautyList from '@/views/admin/BeautyList.vue'
+import OrderAdminList from '@/views/admin/OrderAdminList.vue'
+import MarketingService from '@/views/admin/MarketingService.vue'
 const routes = [
   
   {
@@ -64,9 +68,18 @@ const routes = [
     component: OrderSuccess
   },
   {
-    path: '/order-list',
+    path: '/orders',
     name: 'OrderList',
     component: OrderList
+  },
+   {
+    path: '/admin',
+    component: AdminLayout,
+    children: [
+      { path: 'beauty-list', component: BeautyList },
+      { path: 'order-list', component: OrderAdminList },
+      { path: 'marketing-service', component: MarketingService }
+    ]
   }
 ]
 

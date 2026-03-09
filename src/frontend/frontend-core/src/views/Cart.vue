@@ -58,7 +58,7 @@
             type="checkbox" 
             v-model="item.checked" 
             class="checkbox" 
-            @change="toggleCheck(item.id)" 
+
           />
         </div>
         <div class="col-info">
@@ -93,7 +93,7 @@
       </div>
     </div>
   </div>
-        
+</div>       
      
 </template>
 
@@ -101,7 +101,8 @@
 import { ref, computed, onMounted } from 'vue';
 import { useRouter } from 'vue-router';
 import { storeToRefs } from 'pinia';
-
+import { useCartStore } from '@/store/cartStore';
+const showSuccessTip = ref(false);
 const router = useRouter();
 const cartStore = useCartStore();
 // ✅ 读取全局购物车数据（保持响应式）
@@ -136,7 +137,7 @@ const toggleCheck = (id) => {
 
 // 继续选购
 const goBack = () => {
-  router.go(-1)
+  router.push('/products'); 
 }
 
 // ✅ 改造去结算方法（携带订单数据）
@@ -170,14 +171,12 @@ const goToCheckout = () => {
       detail: '某某小区1号楼2单元301'
     }
   };
+  // ✅ 存入 sessionStorage
+  sessionStorage.setItem('checkoutOrder', JSON.stringify(orderData));
+
+  // ✅ 跳转时不带 query 参数
+  router.push({ name: 'Checkout' });
   
-  // 4. 跳转到结算页，并携带订单数据（用query传递，复杂数据转JSON）
-  router.push({
-    name: 'Checkout',
-    query: {
-      orderData: JSON.stringify(orderData) // 转JSON避免参数丢失
-    }
-  });
 };
 
 const goToHome = () => {

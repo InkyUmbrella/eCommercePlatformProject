@@ -4,19 +4,19 @@
 
 - 后端：Django + Django REST Framework + MySQL
 - 前端：Vue 3 + Vite + Element Plus
-- 文档：部署说明、接口文档、Postman 集合
+- 文档：部署说明、联调 API 文档、Postman 集合
 
 ## 1. 目录结构
 
 ```text
 ecommerce_platform_project/
-├─ docs/                         # 项目文档（部署、API、Postman）
-├─ src/
-│  ├─ backend/                   # Django 后端
-│  └─ frontend/
-|— __init__.py
-|─ README.md
-L— .gitignore
+|- docs/                         # 项目文档（部署、API、SQL）
+|- postman/                      # 按天拆分的请求文件（.request.yaml）
+|- src/
+|  |- backend/                   # Django 后端
+|  |- frontend/
+|- package.json
+|- README.md
 ```
 
 ## 2. 环境要求
@@ -112,22 +112,28 @@ npm run preview
 ## 6. 文档导航
 
 - 部署说明：`docs/deployment_guide.md`
+- 数据库初始化脚本：`docs/db_init.sql`
 - 支撑 API（联调文档）：`docs/support_api.md`
 - 订单状态说明：`src/backend/docs/order_status.md`
-- Postman 集合：
+- Postman 集合（JSON）：
     - `docs/postman/day3_users_auth.postman_collection.json`
     - `docs/postman/day4_addresses.postman_collection.json`
+- Postman 请求（YAML）：
+    - `postman/collections/Day3 Users Auth APIs/`
+    - `postman/collections/Day4 Users Address APIs/`
+    - `postman/collections/Day5-6 Cart APIs/`
+    - `postman/collections/Day7 Orders APIs/`
 
 ## 7. 技术栈
 
-后端主要依赖：
+后端主要依赖（见 `src/backend/requirements.txt`）：
 
-- Django 6
-- djangorestframework
-- djangorestframework-simplejwt
-- django-cors-headers
-- drf-yasg
-- mysqlclient / PyMySQL
+- Django 6.0.2
+- djangorestframework 3.16.1
+- djangorestframework-simplejwt 5.5.1
+- django-cors-headers 4.9.0
+- drf-yasg 1.21.15
+- mysqlclient 2.2.8 / PyMySQL 1.1.2
 
 前端主要依赖：
 
@@ -142,3 +148,4 @@ npm run preview
 - 启动时报 `SECRET_KEY is required`：检查 `src/backend/.env` 是否存在且 `SECRET_KEY` 非空。
 - MySQL 连接失败：核对 `DB_*` 配置与数据库权限。
 - 前端命令无效：该项目使用 Vite，请使用 `npm run dev`，不是 `npm run serve`。
+- 支付接口路径看起来像 `paymentorders`：这是当前主路由 `api/payment`（无末尾 `/`）与子路由拼接导致，详见 `docs/support_api.md` 的路径说明。

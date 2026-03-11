@@ -1,6 +1,7 @@
 -- =========================================================
 -- MySQL 初始化脚本（开发/测试环境示例）
 -- 对应 src/backend/.env 中的 DB_* 变量
+-- 最后更新：2026-03-11
 -- =========================================================
 
 -- 1) 创建数据库
@@ -12,6 +13,7 @@ CREATE DATABASE IF NOT EXISTS ecommerce_platform
 CREATE USER IF NOT EXISTS 'ecom_user'@'%' IDENTIFIED BY 'StrongPassword_ChangeMe_2026!';
 
 -- 3) 授权
+-- 开发环境可使用 ALL PRIVILEGES；生产环境建议按最小权限原则收敛。
 GRANT ALL PRIVILEGES ON ecommerce_platform.* TO 'ecom_user'@'%';
 FLUSH PRIVILEGES;
 

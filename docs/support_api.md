@@ -1,6 +1,6 @@
 # 支撑 API 草案
 
-最后更新：2026-03-06
+最后更新：2026-03-11
 
 ## 1. 文档定位
 
@@ -15,9 +15,9 @@
 
 - 购物车：`/api/cart/`
 - 订单：`/api/orders/`
-- 支付：`/api/paymentorders/<order_id>/pay/`（按当前路由配置实际拼接结果）
-	- 说明：当前项目在主路由使用 `path("api/payment", include("payment.urls"))`，子路由为 `orders/<order_id>/pay/`，因此最终路径会拼接为 `paymentorders`（无 `/`）。
-	- 建议：后续将主路由改为 `api/payment/` 以统一可读性。
+- 支付（当前代码生效路径）：`/api/paymentorders/<order_id>/pay/`
+  - 说明：当前主路由为 `path("api/payment", include("payment.urls"))`，子路由为 `orders/<order_id>/pay/`，最终会被 Django 按字符串拼接为 `paymentorders`（无中间 `/`）。
+  - 建议：后续将主路由调整为 `path("api/payment/", include("payment.urls"))`，调整后路径可读性更高：`/api/payment/orders/<order_id>/pay/`。
 - 客服：`/api/support/`
 - 用户：`/api/users/`
 - 商品：`/api/products/`（草案，待实现）

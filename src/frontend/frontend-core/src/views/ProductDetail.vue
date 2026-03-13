@@ -114,172 +114,116 @@
 </template>
 
 <script setup>
-import { ref, computed, onMounted } from 'vue';  
-import { useRouter,useRoute } from 'vue-router';
+import { ref, computed, onMounted } from 'vue';
+import { useRouter, useRoute } from 'vue-router';
+import { ElMessage } from 'element-plus';
 import { useCartStore } from '@/store/cartStore';
+import * as productApi from '@/api/product';
+import * as addressApi from '@/api/address'; // 需要创建
 
 const router = useRouter();
-const route = useRoute(); 
-const cartStore = useCartStore()
-const showSuccessTip = ref(false);
-// 跳转到地址修改页（可传递地址ID）
-const goToAddressEdit = () => {
-  router.push({
-    name: 'AddressEdit',
-    query: { addressId: '1001' } // 传递要修改的地址ID
-  });
-};
-const addToCart = () => {
-   if (!productData.value.id) {
-    alert('商品信息加载中，请稍后...');
-    return;
-  }
-  // 1. 组装要加入的商品数据
-  const product = {
-    id: productData.value.id,
-    name: productData.value.name,
-    price: Number(productData.value.price), // 转数字避免计算错误
-    quantity: quantity.value,
-    image: productData.value.image,
-    checked: true
-  }
-  
-  // 2. 调用 store 的加入购物车方法
-  cartStore.addToCart(product)
-  
-  // 3. 显示成功提示（3秒后消失）
-  showSuccessTip.value = true
-  setTimeout(() => {
-    showSuccessTip.value = false
-  }, 3000)
-  
-  // 可选：提示用户
-  alert(`已将 ${productData.value.name} ×${quantity.value} 加入购物车！`)
-}
+const route = useRoute();
+const cartStore = useCartStore();
 
-
-// ✅ 1. 接收路由参数 - 同时兼容props和route.params（双重保障）
-const props = defineProps({
-  productId: {
-    type: [String, Number], // 兼容字符串/数字ID，彻底解决类型不匹配
-    required: true
-  }
-});
-// 模拟商品总数据（实际项目中从后端接口获取）
-const allProducts = ref([
-  {
-    id: 1,
-    name: '古驰红礼盒金绒雾217唇膏',
-    description: '古驰 (GUCCI) 元旦新年礼物口红红礼盒金绒...',
-    price: '202',
-    stock: '300',
-    image: new URL('@/assets/product/gucci.jpg', import.meta.url).href
-  },
-  {
-    id: 2,
-    name: 'YSL圣罗兰方管口红',
-    description: 'YSL圣罗兰方管口红 唇霜NM裸缪斯化妆品生日礼盒女生',
-    price: '410',
-    stock: '450',
-    image: new URL('@/assets/product/ysl.jpg', import.meta.url).href
-  },
-  {
-    id: 3,
-    name: '迪奥DIOR烈艳蓝金唇膏高订口红',
-    description: '迪奥DIOR【享随身色】烈艳蓝金唇膏高订...',
-    price: '790',
-    stock: '200',
-    image: new URL('@/assets/product/dior.jpg', import.meta.url).href
-  },
-  {
-    id: 4,
-    name: '兰蔻菁纯唇膏90周年限定口红',
-    description: '兰蔻菁纯唇膏90周年限定口红 196/296丝...',
-    price: '380',
-    stock: '150',
-    image: new URL('@/assets/product/lan.png', import.meta.url).href
-  }
-]);
-// ✅ 3. 商品数据+兜底初始化（避免空白）
-const productData = ref({
-  name: '加载中...',
-  description: '请稍等',
-  price: '0.00',
-  stock: '0',
-  image: new URL('@/assets/bg-makeup', import.meta.url).href // 可选：加个加载图
-});
-
-// 核心：根据ID加载商品 - 做类型转换+错误兜底
-onMounted(() => {
-  // 把接收的参数转成数字，彻底解决类型不匹配问题！！
-  const targetId = Number(props.productId || route.params.productId);
-  // 根据ID查找商品
-  const targetProduct = allProducts.value.find(item => item.id === targetId);
-  
-  if (targetProduct) {
-    // 找到商品，赋值渲染
-    productData.value = targetProduct;
-  } else {
-    // 没找到商品，兜底提示+跳回列表页
-    productData.value.name = '商品不存在';
-    productData.value.description = '您访问的商品已下架或不存在';
-    alert('该商品不存在！');
-    setTimeout(() => {
-      router.push('/product-list');
-    }, 1500);
-  }
-});
-
-// 购买数量
+const productId = computed(() => parseInt(route.params.productId));
+const productData = ref(null);
+const loading = ref(true);
+const error = ref(null);
 const quantity = ref(1);
+const showSuccessTip = ref(false);
+const defaultAddress = ref(null); // 默认地址
 
-// 计算总价
-const totalPrice = computed(() => {
-  return (productData.value.price * quantity.value).toFixed(2);
+// 获取商品详情
+const fetchProduct = async () => {
+  loading.value = true;
+  try {
+    const data = await productApi.getProductDetail(productId.value);
+    productData.value = {
+      id: data.id,
+      name: data.name,
+      description: data.short_description || data.description,
+      price: data.price,
+      stock: data.stock,
+      image: data.cover_image ? (data.cover_image.startsWith('http') ? data.cover_image : import.meta.env.VITE_API_BASE_URL + data.cover_image) : '',
+    };
+  } catch (err) {
+    error.value = err.message;
+    ElMessage.error('加载商品详情失败：' + err.message);
+    // 跳回列表页
+    setTimeout(() => router.push('/products'), 1500);
+  } finally {
+    loading.value = false;
+  }
+};
+
+// 获取默认地址（用于显示）
+const fetchDefaultAddress = async () => {
+  try {
+    const addresses = await addressApi.getAddresses();
+    const defaultAddr = addresses.find(addr => addr.is_default);
+    if (defaultAddr) {
+      defaultAddress.value = defaultAddr;
+    } else if (addresses.length > 0) {
+      defaultAddress.value = addresses[0];
+    }
+  } catch (err) {
+    console.error('获取地址失败', err);
+  }
+};
+
+onMounted(() => {
+  fetchProduct();
+  fetchDefaultAddress();
 });
 
 // 数量增减
 const decreaseQuantity = () => {
-  if (quantity.value > 1) {
-    quantity.value--;
-  }
+  if (quantity.value > 1) quantity.value--;
 };
 const increaseQuantity = () => {
-  if (quantity.value < productData.value.stock) {
-    quantity.value++;
+  if (productData.value && quantity.value < productData.value.stock) quantity.value++;
+};
+
+// 加入购物车
+const addToCart = async () => {
+  if (!productData.value) return;
+  try {
+    await cartStore.addToCart({
+      id: productData.value.id,
+      name: productData.value.name,
+      price: parseFloat(productData.value.price),
+      image: productData.value.image,
+    }, quantity.value);
+    showSuccessTip.value = true;
+    setTimeout(() => { showSuccessTip.value = false; }, 3000);
+    ElMessage.success('已加入购物车');
+  } catch (err) {
+    ElMessage.error('加入购物车失败：' + err.message);
   }
 };
 
-
+// 立即购买
 const buyNow = () => {
-  router.push('/checkout'); // 跳转到结算页
-};
-const goToHome = () => {
-  router.push('/home');
-};
-
-const goToCart = () => {
-  router.push('/cart'); 
-};
-
-const goToOrders = () => {
-  router.push('/orders'); 
-};
-
-const goToProfile = () => {
-  router.push('/profile'); 
-};
-// 新增：跳转到留言板页面
-const goToSupport = () => {
-  if (!productData.value.id) {
-    alert('商品信息加载中，请稍后...');
-    return;
-  }
-  router.push({
-    name: 'Support',
-    query: { productId: productData.value.id }
+  // 简单跳转，但需要传递商品信息到 checkout 页
+  // 可以先将商品加入购物车，然后跳转
+  addToCart().then(() => {
+    router.push('/checkout');
   });
 };
+
+// 地址编辑
+const goToAddressEdit = () => {
+  router.push({ name: 'AddressEdit', query: { addressId: defaultAddress.value?.id } });
+};
+
+// 其他导航
+const goHome = () => router.push('/home');
+const goToCart = () => router.push('/cart');
+const goToOrders = () => router.push('/orders');
+const goToProfile = () => router.push('/profile');
+const goToSupport = () => router.push({ name: 'Support', query: { productId: productId.value } });
+
+
 // 服务保障数据
 const serviceList = ref([
   { id: 1, icon: '❤️', title: '品质保障', desc: '精选优质美妆' },

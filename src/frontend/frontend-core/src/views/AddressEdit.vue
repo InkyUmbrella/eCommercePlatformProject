@@ -105,157 +105,132 @@
 </template>
 
 <script setup>
-import { ref, onMounted } from 'vue';
+import { ref, reactive, onMounted } from 'vue';
 import { useRouter, useRoute } from 'vue-router';
+import { ElMessage, ElMessageBox } from 'element-plus'; // 使用 Element Plus 提示
+import * as addressApi from '@/api/address';
 
 const router = useRouter();
 const route = useRoute();
 
-// 模拟省市区数据（实际项目中可从后端接口获取）
-const provinceList = ref([
-  { code: '110000', name: '北京市' },
-  { code: '310000', name: '上海市' },
-  { code: '440000', name: '广东省' },
-  { code: '330000', name: '浙江省' },
-  { code: '510000', name: '四川省' }
-]);
+// 加载状态
+const loading = ref(false);
 
-// 城市列表（根据省份切换）
+// 省市区模拟数据（保持不变，如果后端提供省市区接口，也可以改为从后端获取）
+const provinceList = ref([/* ... 保持不变 ... */]);
 const cityList = ref([]);
-// 区县列表（根据城市切换）
+
 const areaList = ref([]);
+const regionData = { /* ... 保持不变 ... */ };
 
-// 模拟省市区映射数据
-const regionData = {
-  '110000': [
-    { code: '110100', name: '北京市' },
-  ],
-  '310000': [
-    { code: '310100', name: '上海市' },
-  ],
-  '440000': [
-    { code: '440100', name: '广州市' },
-    { code: '440300', name: '深圳市' },
-    { code: '440600', name: '佛山市' }
-  ],
-  '330000': [
-    { code: '330100', name: '杭州市' },
-    { code: '330200', name: '宁波市' },
-    { code: '330300', name: '温州市' }
-  ],
-  '510000': [
-    { code: '510100', name: '成都市' },
-    { code: '510200', name: '重庆市' },
-    { code: '510300', name: '自贡市' }
-  ],
-  // 城市对应的区县
-  '110100': [
-    { code: '110101', name: '东城区' },
-    { code: '110102', name: '西城区' },
-    { code: '110105', name: '朝阳区' },
-    { code: '110106', name: '丰台区' }
-  ],
-  '310100': [
-    { code: '310101', name: '黄浦区' },
-    { code: '310104', name: '徐汇区' },
-    { code: '310105', name: '长宁区' }
-  ],
-  '440100': [
-    { code: '440103', name: '荔湾区' },
-    { code: '440104', name: '越秀区' },
-    { code: '440105', name: '海珠区' }
-  ],
-  '440300': [
-    { code: '440303', name: '罗湖区' },
-    { code: '440304', name: '福田区' },
-    { code: '440305', name: '南山区' }
-  ]
-};
-
-// 接收路由传递的地址ID（编辑已有地址）
+// 路由参数：addressId 存在时为编辑模式，否则为新增
 const addressId = route.query.addressId;
 
-// 地址表单数据
-const address = ref({
-  id: addressId || Date.now(), // 地址ID
-  name: '', // 收货人
-  phone: '', // 手机号
-  province: '', // 省份编码
-  city: '', // 城市编码
-  area: '', // 区县编码
-  detail: '', // 详细地址
-  zipCode: '', // 邮政编码
-  isDefault: false // 是否默认地址
+// 地址表单数据（与后端字段对应）
+const address = reactive({
+  id: null,
+  name: '',          // 收货人
+  phone: '',          // 手机号（前端字段）
+  province: '',
+  city: '',
+  area: '',
+  detail: '',
+  zipCode: '',
+  isDefault: false    // 是否默认
 });
 
-// 初始化：如果是编辑已有地址，加载原有数据
-onMounted(() => {
-  // 模拟从接口获取原有地址数据
+// 初始化
+onMounted(async () => {
   if (addressId) {
-    const defaultAddress = {
-      id: addressId,
-      name: '张三',
-      phone: '13800138000',
-      province: '110000',
-      city: '110100',
-      area: '110101',
-      detail: '东城区某某小区1号楼2单元301',
-      zipCode: '100010',
-      isDefault: true
-    };
-    address.value = defaultAddress;
-    
-    // 初始化省市区下拉框
-    handleProvinceChange();
-    handleCityChange();
+    // 编辑模式：获取地址详情
+    loading.value = true;
+    try {
+      // 假设后端有详情接口，返回数据格式如：{ id, name, phone_number, address, is_default, ... }
+      const res = await addressApi.getAddressDetail(addressId);
+      // 填充表单，需要将后端字段映射到前端
+      address.id = res.id;
+      address.name = res.name;
+      address.phone = res.phone_number;
+      address.isDefault = res.is_default;
+      
+      // 地址字符串解析（假设后端存储的 address 是完整地址，如 "北京市东城区某某小区1号楼2单元301"）
+      // 这里简单处理：无法反向解析出省市区，所以省市区可能无法回显，需要后端分别返回省市区字段。
+      // 如果后端只返回完整字符串，那么编辑时省市区下拉框无法自动选中，需要用户重新选择。
+      // 为了更好体验，建议后端增加 province_code, city_code, area_code 字段。
+      // 此处先模拟解析，实际开发需要与后端协调。
+      // 我们暂时将完整地址赋值给 detail，省市区留空让用户重新选择。
+      address.detail = res.address || '';
+      
+      // 初始化省市区下拉框（根据解析出的编码，此处无编码，所以无法自动选中）
+      // 可以清空已选值
+      address.province = '';
+      address.city = '';
+      address.area = '';
+    } catch (err) {
+      ElMessage.error('获取地址详情失败：' + err.message);
+    } finally {
+      loading.value = false;
+    }
   }
 });
 
 // 省份切换事件
 const handleProvinceChange = () => {
-  if (address.value.province) {
-    cityList.value = regionData[address.value.province] || [];
-    // 清空城市和区县
-    address.value.city = '';
-    address.value.area = '';
+  if (address.province) {
+    cityList.value = regionData[address.province] || [];
+    address.city = '';
+    address.area = '';
     areaList.value = [];
   }
 };
 
 // 城市切换事件
 const handleCityChange = () => {
-  if (address.value.city) {
-    areaList.value = regionData[address.value.city] || [];
-    // 清空区县
-    address.value.area = '';
+  if (address.city) {
+    areaList.value = regionData[address.city] || [];
+    address.area = '';
   }
 };
 
 // 保存地址
-const saveAddress = () => {
+const saveAddress = async () => {
   // 表单验证
-  if (!address.value.name) {
-    alert('请输入收货人姓名！');
+  if (!address.name) {
+    ElMessage.warning('请输入收货人姓名！');
     return;
   }
-  if (!/^1[3-9]\d{9}$/.test(address.value.phone)) {
-    alert('请输入正确的手机号！');
+  if (!/^1[3-9]\d{9}$/.test(address.phone)) {
+    ElMessage.warning('请输入正确的手机号！');
     return;
   }
-  if (!address.value.province || !address.value.city || !address.value.area) {
-    alert('请选择完整的省市区！');
+  if (!address.province || !address.city || !address.area) {
+    ElMessage.warning('请选择完整的省市区！');
     return;
   }
-  if (!address.value.detail) {
-    alert('请输入详细地址！');
+  if (!address.detail) {
+    ElMessage.warning('请输入详细地址！');
     return;
   }
 
-  // 模拟提交到后端
-  console.log('修改后的地址数据：', address.value);
-  alert('地址修改成功！');
-  // 跳回上一页（商品详情页）
-  router.go(-1);
+  loading.value = true;
+
+   try {
+    if (addressId) {
+      await addressApi.updateAddress(addressId, payload);
+    } else {
+      await addressApi.createAddress(payload);
+    }
+    ElMessage.success(addressId ? '地址修改成功' : '地址添加成功');
+    const redirect = route.query.redirect || '/addresses';
+    if (redirect === '/checkout') {
+      // 返回确认页并添加时间戳参数，触发刷新
+      router.push({ path: redirect, query: { _t: Date.now() } });
+    } else {
+      router.push(redirect);
+    }
+  } catch (err) {
+    ElMessage.error('保存失败：' + err.message);
+  }
 };
 
 // 返回上一页

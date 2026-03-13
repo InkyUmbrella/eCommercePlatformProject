@@ -44,193 +44,191 @@
          
       </div>
     </header>
-    <!-- 轮播图（图二效果） -->
-    <div class="carousel">
-      <div class="carousel-item" v-for="(item, index) in carouselList" :key="index" :class="{ active: index === currentIndex }">
-        <img :src="item.image" :alt="item.title" class="carousel-img" />
-        <div class="carousel-text">
-          <h3>{{ item.title }}</h3>
-          <p>{{ item.subtitle }}</p>
-          <!-- 补充轮播按钮，匹配之前设计 -->
-          <button class="carousel-btn" @click="handleCarouselClick(item.btnLink)">{{ item.btnText }}</button>
-        </div>
-      </div>
-      <div class="carousel-dots">
-        <span class="dot" v-for="(_, index) in carouselList" :key="index" :class="{ active: index === currentIndex }" @click="goToSlide(index)"></span>
-      </div>
-    </div>
-    <!-- 新品上架模块 -->
-    <section class="new-products">
-      <div class="section-title">
+        <!-- 加载状态 -->
+    <div v-if="loading" class="loading">加载中...</div>
 
-        <h2>新品上架</h2>
-        <div class="carousel-controls">
-          <button class="control-btn" @click="prevProduct">←</button>
-          <button class="control-btn" @click="nextProduct">→</button>
+    <!-- 错误提示 -->
+    <div v-else-if="error" class="error">{{ error }}</div>
+
+    <!-- 主页内容 -->
+    <template v-else>
+      <!-- 轮播图 -->
+      <div class="carousel">
+        <div
+          class="carousel-item"
+          v-for="(item, index) in banners"
+          :key="index"
+          :class="{ active: index === currentIndex }"
+        >
+          <img :src="item.image" :alt="item.title" class="carousel-img" />
+          <div class="carousel-text">
+            <h3>{{ item.title }}</h3>
+            <p>{{ item.subtitle }}</p>
+            <button class="carousel-btn" @click="handleCarouselClick(item.link)">
+              {{ item.btnText }}
+            </button>
+          </div>
+        </div>
+        <div class="carousel-dots">
+          <span
+            class="dot"
+            v-for="(_, index) in banners"
+            :key="index"
+            :class="{ active: index === currentIndex }"
+            @click="goToSlide(index)"
+          ></span>
         </div>
       </div>
-      <div class="product-list">
-        <div class="product-card" v-for="(product, index) in newProducts" :key="index">
-          <div class="product-badge">新品</div>
-          <img :src="product.image" :alt="product.name" class="product-img" />
-          <p class="product-name">{{ product.name }}</p>
-          <p class="product-price">¥{{ product.price }}</p>
+
+      <!-- 新品上架模块 -->
+      <section class="new-products">
+        <div class="section-title">
+          <h2>新品上架</h2>
+          <div class="carousel-controls">
+            <button class="control-btn" @click="prevProduct">←</button>
+            <button class="control-btn" @click="nextProduct">→</button>
+          </div>
         </div>
-      </div>
-    </section>
+        <div class="product-list">
+          <div
+            class="product-card"
+            v-for="(product, index) in newProducts"
+            :key="index"
+          >
+            <div class="product-badge" v-if="product.is_new">新品</div>
+            <img :src="product.image" :alt="product.name" class="product-img" />
+            <p class="product-name">{{ product.name }}</p>
+            <p class="product-price">¥{{ product.price }}</p>
+          </div>
+        </div>
+      </section>
+    </template>
   </div>
 </template>
 
 <script setup>
 import { ref, onMounted, onUnmounted } from 'vue';
 import { useRouter } from 'vue-router';
+import { ElMessage } from 'element-plus';
+import * as homeApi from '@/api/home';
+const baseURL = import.meta.env.VITE_API_BASE_URL || 'http://127.0.0.1:8000';
+banners.value = bannersRes.map(item => ({
+  ...item,
+  image: item.image.startsWith('http') ? item.image : baseURL + item.image
+}));
 const router = useRouter();
 
-const goToLogin = () => {
-  router.push('/login');
-};
+// 数据
+const banners = ref([]);
+const newProducts = ref([]);
+const loading = ref(true);
+const error = ref(null);
 
-// 搜索关键词
-const searchKeyword = ref('')
-// 选中的分类（对应“美妆分类”下拉框）
-const selectedCategory = ref('name')  // 默认值可根据需求调整
-// 选中的品牌（对应“美妆品牌”下拉框）
-const selectedBrand = ref('')
-const handleSearch = () => {
-  const query = {}
-  
-  if (searchKeyword.value.trim()) {
-    query.keyword = searchKeyword.value.trim()
-  }
-  
-  // 如果分类不是默认的'name'，才传递分类参数（根据实际需求决定）
-  if (selectedCategory.value !== 'name') {
-    query.category = selectedCategory.value
-  }
-  
-  // 如果品牌不为空，传递品牌参数
-  if (selectedBrand.value) {
-    query.brand = selectedBrand.value
-  }
-  
-  router.push({ path: '/products', query })
-}
-const goToHome = () => {
-  router.push('/home');
-};
-
-const goToCart = () => {
-  router.push('/cart'); 
-};
-
-const goToOrders = () => {
-  router.push('/orders'); 
-};
-
-const goToProfile = () => {
-  router.push('/profile'); 
-};
-
-// 轮播图核心数据（按设计方案配置）
-const carouselList = ref([
-  // 轮播图1：春季新品首发
-  {
-    image: new URL('@/assets/spring-new.jpg', import.meta.url).href,
-    alt: '春日新妆新品首发',
-    title: '春日新妆 · 新品首发',
-    subtitle: '一抹粉调，解锁春日氛围感妆容',
-    btnText: '立即选购新品',
-    btnLink: '#' // 跳转至新品页面（可自定义）
-  },
-  // 轮播图2：爆款美妆合集
-  {
-     image: new URL('@/assets/hot.jpg', import.meta.url).href,
-    alt: '美妆爆款闭眼入不踩雷',
-    title: '美妆爆款 · 闭眼入不踩雷',
-    subtitle: '精选热门单品，打造完美妆容',
-    btnText: '抢爆款好物',
-    btnLink: '#' // 跳转至爆款页面（可自定义）
-  },
-  // 轮播图3：新用户专享福利
-  {
-     image: new URL('@/assets/new-user.png', import.meta.url).href,
-    alt: '新用户专享美妆福利',
-    title: '新用户专享 · 美妆福利',
-    subtitle: '满200减50 | 注册即送美妆小样',
-    btnText: '立即领福利',
-    btnLink: '#' // 跳转至领券页面（可自定义）
-  }
-]);
+// 轮播图索引
 const currentIndex = ref(0);
 let autoPlayTimer = null;
-// 自动轮播
-const startAutoPlay = () => {
-  autoPlayTimer = setInterval(() => {
-    currentIndex.value = (currentIndex.value + 1) % carouselList.value.length;
-  }, 3000);
-};
-const stopAutoPlay = () => {
-  clearInterval(autoPlayTimer);
-};
-// 切换到指定轮播页
-const goToSlide = (index) => {
-  currentIndex.value = index;
-  clearInterval(autoPlayTimer);
-  startAutoPlay();
-};
-// 轮播按钮点击事件
-const handleCarouselClick = (link) => {
-  if (link === '#') return;
-  router.push(link);
-};
-// 新品数据
-const newProducts = ref([
-  {
-    image: new URL('@/assets/product1.png', import.meta.url).href,
-    name: '小金条口红',
-    price: '320.00'
-  },
-  {
-    image: new URL('@/assets/product2.jpg', import.meta.url).href,
-    name: '迪奥999口红',
-    price: '380.00'
-  },
-  {
-    image: new URL('@/assets/product3.jpg', import.meta.url).href,
-    name: '圣罗兰细管纯口红',
-    price: '350.00'
-  },
-  {
-    image: new URL('@/assets/product4.jpg', import.meta.url).href,
-    name: '香奈儿N°5香水',
-    price: '1280.00'
-  },
-  {
-    image: new URL('@/assets/product5.png', import.meta.url).href,
-    name: '雅诗兰黛小棕瓶',
-    price: '980.00'
+
+// 搜索（保持不变）
+const searchKeyword = ref('');
+const selectedCategory = ref('name');
+const selectedBrand = ref('');
+
+// 获取主页数据
+const fetchHomeData = async () => {
+  loading.value = true;
+  error.value = null;
+  try {
+    const [bannersRes, newProductsRes] = await Promise.all([
+      homeApi.getBanners(),
+      homeApi.getNewProducts()
+    ]);
+
+    // 映射轮播图字段（根据实际返回调整）
+    banners.value = bannersRes.map(item => ({
+      image: item.image,           // 假设返回的是完整URL或需要拼接
+      title: item.title,
+      subtitle: item.subtitle,
+      btnText: item.btn_text,      // 后端字段可能是 btn_text
+      link: item.link
+    }));
+
+    // 映射新品商品字段
+    newProducts.value = newProductsRes.map(item => ({
+      id: item.id,
+      name: item.name,              // 如果后端是 title，改为 item.title
+      price: item.price,            // 价格可能是字符串或数字
+      image: item.cover_image,      // 如果后端是 cover，改为 item.cover
+      is_new: item.is_new || false  // 如果后端没有 is_new，可以去掉badge
+    }));
+  } catch (err) {
+    error.value = err.message;
+    ElMessage.error('加载主页数据失败：' + err.message);
+  } finally {
+    loading.value = false;
   }
-]);
-// 新品轮播控制
-const prevProduct = () => {
-  document.querySelector('.product-list').scrollBy({ left: -300, behavior: 'smooth' });
 };
-const nextProduct = () => {
-  document.querySelector('.product-list').scrollBy({ left: 300, behavior: 'smooth' });
+
+// 如果图片是相对路径，需要拼接完整地址
+const getFullImageUrl = (path) => {
+  if (!path) return '';
+  if (path.startsWith('http')) return path;
+  // 拼接后端地址（从环境变量或固定配置读取）
+  const baseURL = import.meta.env.VITE_API_BASE_URL || 'http://127.0.0.1:8000';
+  return baseURL + path;
 };
+
 onMounted(() => {
+  fetchHomeData();
   startAutoPlay();
-  // 轮播悬浮暂停
+
   const carouselDom = document.querySelector('.carousel');
   carouselDom?.addEventListener('mouseenter', stopAutoPlay);
   carouselDom?.addEventListener('mouseleave', startAutoPlay);
 });
+
 onUnmounted(() => {
   stopAutoPlay();
   const carouselDom = document.querySelector('.carousel');
   carouselDom?.removeEventListener('mouseenter', stopAutoPlay);
   carouselDom?.removeEventListener('mouseleave', startAutoPlay);
 });
+
+// 轮播自动播放
+const startAutoPlay = () => {
+  if (autoPlayTimer) clearInterval(autoPlayTimer);
+  if (banners.value.length === 0) return;
+  autoPlayTimer = setInterval(() => {
+    currentIndex.value = (currentIndex.value + 1) % banners.value.length;
+  }, 3000);
+};
+const stopAutoPlay = () => {
+  clearInterval(autoPlayTimer);
+};
+const goToSlide = (index) => {
+  currentIndex.value = index;
+  stopAutoPlay();
+  startAutoPlay();
+};
+
+// 轮播按钮点击
+const handleCarouselClick = (link) => {
+  if (link && link !== '#') router.push(link);
+};
+
+// 搜索
+const handleSearch = () => {
+  const query = {};
+  if (searchKeyword.value.trim()) query.keyword = searchKeyword.value.trim();
+  if (selectedCategory.value !== 'name') query.category = selectedCategory.value;
+  if (selectedBrand.value) query.brand = selectedBrand.value;
+  router.push({ path: '/products', query });
+};
+
+// 导航
+const goToHome = () => router.push('/home');
+const goToCart = () => router.push('/cart');
+const goToOrders = () => router.push('/orders');
+const goToProfile = () => router.push('/profile');
 </script>
 
 <style scoped>
@@ -285,6 +283,16 @@ onUnmounted(() => {
   align-items: center;
   gap: 10px;
   flex-wrap: nowrap;
+}
+.loading {
+  text-align: center;
+  padding: 50px;
+  color: #ff69b4;
+}
+.error {
+  text-align: center;
+  padding: 50px;
+  color: red;
 }
 .search-label, .filter-label {
   color: #ff69b4;

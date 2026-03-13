@@ -16,19 +16,21 @@
 
 <script setup>
 import { useRouter, useRoute } from 'vue-router';
+import { onMounted } from 'vue';
+import { ElMessage } from 'element-plus';
 
 const router = useRouter();
 const route = useRoute();
 
-// 查看订单列表
-const goToOrderList = () => {
-  router.push('/orders');
-};
+onMounted(() => {
+  if (!route.query.orderId) {
+    ElMessage.warning('订单信息不完整，将返回首页');
+    router.push('/home');
+  }
+});
 
-// 返回首页
-const goToHome = () => {
-  router.push('/home');
-};
+const goToOrderList = () => router.push('/orders');
+const goToHome = () => router.push('/home');
 </script>
 
 <style scoped>

@@ -26,22 +26,31 @@
       ✅ 成功加入购物车！
     </div>
 
+    
+    <!-- 加载状态 -->
+    <div v-if="loading" class="loading">加载中...</div>
+
+    <!-- 错误提示 -->
+    <div v-if="error" class="error">{{ error }}</div>
+
     <!-- 购物车主体 -->
-    <div class="cart-main">
+    <div v-else class="cart-main">
       <!-- 购物车头部操作栏 -->
       <div class="cart-header">
         <div class="cart-title">
           <span class="heart">❤️</span>
           <span>美妆商城</span>
         </div>
-        <button class="clear-btn" @click="clearCart">清空</button>
+        <button class="clear-btn" @click="handleClearCart">清空</button>
       </div>
 
-      <!-- 购物车商品列表 -->
+      <!-- 购物车列表 -->
       <div class="cart-list">
-        <!-- 表头 -->
+        <!-- 表头（增加全选复选框） -->
         <div class="cart-table-header">
-          <span class="col-select"></span>
+          <span class="col-select">
+            <input type="checkbox" :checked="allSelected" @change="toggleAllSelect" />
+          </span>
           <span class="col-info">美妆信息</span>
           <span class="col-spec">规格</span>
           <span class="col-price">单价</span>
@@ -50,114 +59,131 @@
           <span class="col-subtotal">小计</span>
           <span class="col-action">操作</span>
         </div>
-         <!-- ✅ 绑定全局购物车数据 -->
-      <div class="cart-item" v-for="item in cartItems" :key="item.id">
-        <div class="col-select">
-          <!-- ✅ 绑定勾选状态 + 调用 toggleCheck -->
-          <input 
-            type="checkbox" 
-            v-model="item.checked" 
-            class="checkbox" 
 
-          />
-        </div>
-        <div class="col-info">
-          <img :src="item.image" :alt="item.name" class="product-img" />
-          <span class="product-name">{{ item.name }}</span>
-        </div>
-        <div class="col-spec">-</div>
-        <div class="col-price">¥{{ item.price }}</div>
-        <div class="col-quantity">
-          <button class="quantity-btn" @click="decreaseQuantity(item)" :disabled="item.quantity <= 1">-</button>
-          <input type="number" v-model.number="item.quantity" class="quantity-input" readonly />
-          <button class="quantity-btn" @click="increaseQuantity(item)">+</button>
-        </div>
-        <div class="col-discount">-</div>
-        <div class="col-subtotal">¥{{ (item.price * item.quantity).toFixed(2) }}</div>
-        <div class="col-action">
-          <button class="delete-btn" @click="removeItem(item.id)">×</button>
+        <div class="cart-item" v-for="item in cartItems" :key="item.id">
+          <div class="col-select">
+            <input type="checkbox" v-model="item.selected" class="checkbox" @change="handleToggleCheck(item.id)" />
+          </div>
+          <div class="col-info">
+            <img :src="item.image || defaultImage" :alt="item.name" class="product-img" />
+            <span class="product-name">{{ item.name }}</span>
+          </div>
+          <div class="col-spec">-</div>
+          <div class="col-price">¥{{ item.price.toFixed(2) }}</div>
+          <div class="col-quantity">
+            <button class="quantity-btn" @click="handleDecrease(item)" :disabled="item.quantity <= 1">-</button>
+            <input type="number" v-model.number="item.quantity" class="quantity-input" readonly />
+            <button class="quantity-btn" @click="handleIncrease(item)">+</button>
+          </div>
+          <div class="col-discount">-</div>
+          <div class="col-subtotal">¥{{ (item.price * item.quantity).toFixed(2) }}</div>
+          <div class="col-action">
+            <button class="delete-btn" @click="handleRemove(item.id)">×</button>
+          </div>
         </div>
       </div>
-    </div>
 
-    <!-- 底部操作栏（绑定全局计算属性） -->
-    <div class="cart-footer">
-      <div class="footer-left">
-        <button class="continue-shopping" @click="goBack">← 继续选购</button>
-        <span class="cart-summary">共 {{ cartItems.length }} 件美妆，已选 {{ checkedCount }} 件</span>
-      </div>
-      <div class="footer-right">
-        <span class="total-label">合计：</span>
-        <span class="total-price">¥{{ totalAmount }}</span>
-        <button class="checkout-btn" :disabled="Number(totalAmount) <= 0" @click="goToCheckout">去结算 →</button>
+      <!-- 底部操作栏 -->
+      <div class="cart-footer">
+        <div class="footer-left">
+          <button class="continue-shopping" @click="goBack">← 继续选购</button>
+          <span class="cart-summary">共 {{ cartItems.length }} 件美妆，已选 {{ checkedCount }} 件</span>
+        </div>
+        <div class="footer-right">
+          <span class="total-label">合计：</span>
+          <span class="total-price">¥{{ totalAmount }}</span>
+          <button class="checkout-btn" :disabled="Number(totalAmount) <= 0" @click="goToCheckout">去结算 →</button>
+        </div>
       </div>
     </div>
   </div>
-</div>       
-
-     
 </template>
+
 
 <script setup>
 import { ref, computed, onMounted } from 'vue';
 import { useRouter } from 'vue-router';
 import { storeToRefs } from 'pinia';
 import { useCartStore } from '@/store/cartStore';
-const showSuccessTip = ref(false);
+import { ElMessage } from 'element-plus'; // 如果你使用了 Element Plus
+
 const router = useRouter();
 const cartStore = useCartStore();
-// ✅ 读取全局购物车数据（保持响应式）
-const { cartItems, checkedCount, totalAmount } = storeToRefs(cartStore)
+const { cartItems, checkedCount, totalAmount, loading, error } = storeToRefs(cartStore);
 
-// ✅ 数量增减（调用 store 方法）
-const increaseQuantity = (item) => {
-  cartStore.updateQuantity(item.id, 'increase')
-}
-const decreaseQuantity = (item) => {
-  cartStore.updateQuantity(item.id, 'decrease')
-}
+// 默认图片（当商品图片缺失时显示）
+const defaultImage = '@/assets/default-product.png';
 
-// ✅ 删除商品（调用 store 方法）
-const removeItem = (id) => {
-  if (confirm('确定要删除该商品吗？')) {
-    cartStore.removeItem(id)
-  }
-}
+// 全选状态计算属性
+const allSelected = computed(() => {
+  return cartItems.value.length > 0 && cartItems.value.every(item => item.selected);
+});
 
-// ✅ 清空购物车（调用 store 方法）
-const clearCart = () => {
-  if (confirm('确定要清空购物车吗？')) {
-    cartStore.clearCart()
-  }
-}
+// 页面加载时获取购物车
+onMounted(() => {
+  cartStore.fetchCart();
+});
 
-// ✅ 切换商品勾选状态
-const toggleCheck = (id) => {
-  cartStore.toggleCheck(id)
-}
+// 处理勾选切换
+const handleToggleCheck = (id) => {
+  cartStore.toggleCheck(id);
+};
+
+// 增加数量
+const handleIncrease = (item) => {
+  cartStore.updateQuantity(item.id, 'increase');
+};
+
+// 减少数量
+const handleDecrease = (item) => {
+  cartStore.updateQuantity(item.id, 'decrease');
+};
+
+// 删除商品
+const handleRemove = (id) => {
+  ElMessage.confirm('确定要删除该商品吗？', '提示', {
+    confirmButtonText: '确定',
+    cancelButtonText: '取消',
+    type: 'warning',
+  }).then(() => {
+    cartStore.removeItem(id);
+  }).catch(() => {});
+};
+
+// 清空购物车
+const handleClearCart = () => {
+  ElMessage.confirm('确定要清空购物车吗？', '提示', {
+    confirmButtonText: '确定',
+    cancelButtonText: '取消',
+    type: 'warning',
+  }).then(() => {
+    cartStore.clearCart();
+  }).catch(() => {});
+};
+
+// 全选/全不选
+const toggleAllSelect = (e) => {
+  cartStore.toggleSelectAll(e.target.checked);
+};
 
 // 继续选购
 const goBack = () => {
-  router.push('/products'); 
-}
+  router.push('/products');
+};
 
-// ✅ 改造去结算方法（携带订单数据）
+// 去结算
 const goToCheckout = () => {
-  // 1. 筛选已勾选的商品
-  const selectedItems = cartItems.value.filter(item => item.checked)
-  
-  // 2. 验证：无勾选商品则提示
+  const selectedItems = cartItems.value.filter(item => item.selected);
   if (selectedItems.length === 0) {
-    alert('请先选择要结算的商品！');
+    ElMessage.warning('请先选择要结算的商品！');
     return;
   }
-  
-  // 3. 组装订单数据（包含商品列表、总金额、下单时间等）
+  // 组装订单数据，存入 sessionStorage
   const orderData = {
-    orderId: Date.now(), // 用时间戳模拟订单ID
-    createTime: new Date().toLocaleString(), // 下单时间
-    totalAmount: totalAmount.value, // 总金额（从store获取）
-    items: selectedItems.map(item => ({ // 商品列表（精简字段）
+    orderId: Date.now(),
+    createTime: new Date().toLocaleString(),
+    totalAmount: totalAmount.value,
+    items: selectedItems.map(item => ({
       id: item.id,
       name: item.name,
       price: item.price,
@@ -165,36 +191,23 @@ const goToCheckout = () => {
       image: item.image,
       subtotal: (item.price * item.quantity).toFixed(2)
     })),
-    address: { // 模拟默认收货地址（后续可从地址管理页获取）
-      name: '张三',
-      phone: '13800138000',
-      region: '北京市东城区',
-      detail: '某某小区1号楼2单元301'
-    }
+    address: { /* 模拟地址，后续可从地址管理获取 */ }
   };
-  // ✅ 存入 sessionStorage
+
   sessionStorage.setItem('checkoutOrder', JSON.stringify(orderData));
 
-  // ✅ 跳转时不带 query 参数
+
+
   router.push({ name: 'Checkout' });
-  
+
+
 };
 
-const goToHome = () => {
-  router.push('/home');
-};
-
-const goToCart = () => {
-  router.push('/cart'); 
-};
-
-const goToOrders = () => {
-  router.push('/orders'); 
-};
-
-const goToProfile = () => {
-  router.push('/profile'); 
-};
+// 导航方法
+const goToHome = () => router.push('/home');
+const goToCart = () => router.push('/cart');
+const goToOrders = () => router.push('/orders');
+const goToProfile = () => router.push('/profile');
 </script>
 
 <style scoped>
@@ -210,6 +223,16 @@ const goToProfile = () => {
 }
 
 /* 顶部导航栏 */
+.loading {
+  text-align: center;
+  padding: 50px;
+  color: #ff69b4;
+}
+.error {
+  text-align: center;
+  padding: 50px;
+  color: red;
+}
 .header {
   display: flex;
   align-items: center;

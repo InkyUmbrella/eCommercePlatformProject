@@ -18,69 +18,24 @@
         <!-- 表单标题 -->
         <h2>创建账号</h2>
         
-        <el-form :model="form" ref="formRef" label-width="0px" class="login-form">
-          <el-form-item prop="username">
-            <el-input 
-              v-model="form.username" 
-              placeholder="请输入昵称" 
-              size="large"
-              prefix-icon="el-icon-user"
-            />
-          </el-form-item>
+        <el-form :model="form" ref="formRef" :rules="rules" label-width="0px" class="login-form">
+    <el-form-item prop="username">
+      <el-input v-model="form.username" placeholder="请输入昵称" size="large" prefix-icon="el-icon-user" />
+    </el-form-item>
 
-          <el-form-item prop="email">
-            <el-input 
-              v-model="form.email" 
-              placeholder="请输入邮箱" 
-              size="large"
-              prefix-icon="el-icon-message"
-            />
-          </el-form-item>
+    <el-form-item prop="password">
+      <el-input v-model="form.password" type="password" placeholder="请输入密码" size="large" prefix-icon="el-icon-lock" />
+    </el-form-item>
 
-          <el-form-item prop="code">
-            <el-row :gutter="10">
-              <el-col :span="16">
-                <el-input 
-                  v-model="form.code" 
-                  placeholder="邮箱验证码" 
-                  size="large"
-                  prefix-icon="el-icon-sms"
-                />
-              </el-col>
-              <el-col :span="8">
-                <el-button 
-                  type="primary" 
-                  size="large" 
-                  class="code-btn"
-                  @click="sendCode"
-                >
-                  {{ codeText }}
-                </el-button>
-              </el-col>
-            </el-row>
-          </el-form-item>
+    <!-- 可选：添加确认密码字段（前端验证） -->
+    <el-form-item prop="confirmPassword">
+      <el-input v-model="form.confirmPassword" type="password" placeholder="请再次输入密码" size="large" prefix-icon="el-icon-lock" />
+    </el-form-item>
 
-          <el-form-item prop="password">
-            <el-input 
-              v-model="form.password" 
-              type="password" 
-              placeholder="请输入密码" 
-              size="large"
-              prefix-icon="el-icon-lock"
-            />
-          </el-form-item>
-
-          <el-form-item>
-            <el-button 
-              type="primary" 
-              size="large" 
-              class="submit-btn"
-              @click="handleSubmit"
-            >
-              立即注册
-            </el-button>
-          </el-form-item>
-        </el-form>
+    <el-form-item>
+      <el-button type="primary" size="large" class="submit-btn" @click="handleSubmit">立即注册</el-button>
+    </el-form-item>
+  </el-form>
 
         <!-- 底部链接 -->
         <div class="form-footer">
@@ -94,71 +49,58 @@
 </template>
 
 <script setup>
-import { useRouter } from 'vue-router';
 import { ref, reactive } from 'vue';
+import { useRouter } from 'vue-router';
+
 import { ElMessage } from 'element-plus';
-
-// 表单引用
+import { useUserStore } from '@/store/userStore';
 const formRef = ref(null);
-
-// 表单数据
+const router = useRouter();
+const userStore = useUserStore();
 const form = reactive({
   username: '',
-  email: '',
-  code: '',
-  password: ''
+  password: '',
+  confirmPassword: ''
 });
-const router = useRouter();
 
-// 验证码倒计时
-const codeText = ref('发送验证码');
-let timer = null;
-
-// 发送验证码逻辑
-const sendCode = () => {
-  if (!form.email) {
-    ElMessage.warning('请先输入邮箱');
-    return;
-  }
-  
-  // 简单的邮箱校验
-  const reg = /^[a-zA-Z0-9._%+-]+@[a-zA-Z0-9.-]+\.[a-zA-Z]{2,}$/;
-  if (!reg.test(form.email)) {
-    ElMessage.warning('请输入正确的邮箱格式');
-    return;
-  }
-
-  // 倒计时逻辑
-  let count = 60;
-  codeText.value = `${count} s`;
-  timer = setInterval(() => {
-    count--;
-    codeText.value = `${count} s`;
-    if (count <= 0) {
-      clearInterval(timer);
-      codeText.value = '发送验证码';
+// 表单验证规则
+const rules = {
+  username: [
+    { required: true, message: '请输入昵称', trigger: 'blur' },
+    { min: 2, max: 20, message: '长度在 2 到 20 个字符', trigger: 'blur' }
+  ],
+  password: [
+    { required: true, message: '请输入密码', trigger: 'blur' },
+    { min: 6, message: '密码至少 6 位', trigger: 'blur' }
+  ],
+  confirmPassword: [
+    { required: true, message: '请再次输入密码', trigger: 'blur' },
+    {
+      validator: (rule, value, callback) => {
+        if (value !== form.password) {
+          callback(new Error('两次输入密码不一致'));
+        } else {
+          callback();
+        }
+      },
+      trigger: 'blur'
     }
-  }, 1000);
-
-  // 这里可以调用后端接口发送验证码
-  console.log('发送验证码到:', form.email);
+  ]
 };
-
-// 提交表单逻辑
-const handleSubmit = () => {
-  formRef.value.validate((valid) => {
-    if (valid) {
-      // 表单验证通过，调用注册接口
-      console.log('注册数据:', form);
-      ElMessage.success('注册成功！');
-      // 跳转到登录页
-      setTimeout(() => {
-        router.push('/login');
-      }, 1500); // 1.5秒后跳转
-    } else {
-      ElMessage.error('请完善表单信息');
+const handleSubmit = async () => {
+  if (!formRef.value) return;
+  try {
+    await formRef.value.validate();
+    // 调用 store 的注册方法
+    await userStore.register(form.username, form.password);
+    // 注册成功后会跳转到登录页（已经在 store 中处理）
+    ElMessage.success('注册成功，请登录');
+  } catch (error) {
+    // 验证不通过或注册失败
+    if (error.message) {
+      ElMessage.error(error.message);
     }
-  });
+  }
 };
 </script>
 
@@ -268,16 +210,7 @@ const handleSubmit = () => {
   margin-bottom: 20px;
 }
 
-/* 验证码按钮样式 */
-.code-btn {
-  width: 100%;
-  background-color: #FFB6C1;
-  border: none;
-}
 
-.code-btn:hover {
-  background-color: #FFC0CB;
-}
 
 /* 提交按钮样式 */
 .submit-btn {

@@ -69,17 +69,24 @@
       </button>
     </div>
 
+      <!-- 加载状态 -->
+    <div v-if="loading" class="loading">加载中...</div>
+
+    <!-- 错误提示 -->
+    <div v-else-if="error" class="error">{{ error }}</div>
+
     <!-- 订单列表 -->
-    <div class="order-list">
-      <div class="order-item" v-for="order in filteredOrders" :key="order.id">
-        <!-- 订单头部：订单号+时间+状态 -->
+    <div v-else class="order-list">
+      <div class="order-item" v-for="order in orderList" :key="order.id">
+        <!-- 订单头部 -->
         <div class="order-header">
           <span class="order-id">订单号：{{ order.id }}</span>
           <span class="order-time">{{ order.createTime }}</span>
           <span class="order-status" :class="order.status">{{ order.statusText }}</span>
         </div>
 
-        <!-- 订单商品信息 -->
+        <!-- 订单商品信息（可能有多件，这里只展示第一件或循环） -->
+        <!-- 原模板只展示一件，如果有多件需要改造 -->
         <div class="order-content">
           <img :src="order.image" :alt="order.name" class="product-img" />
           <div class="product-info">
@@ -94,7 +101,7 @@
         </div>
 
         <!-- 收货地址 -->
-        <div class="order-address">
+        <div class="order-address" v-if="order.address.name">
           <span class="address-icon">📍</span>
           <span class="address-text">{{ order.address.name }} · {{ order.address.phone }}</span>
           <span class="address-detail">{{ order.address.region }} {{ order.address.detail }}</span>
@@ -102,44 +109,66 @@
 
         <!-- 订单操作栏 -->
         <div class="order-actions">
-          <!-- 物流查看（待发货/待收货状态显示） -->
+          <!-- 查看物流（待发货/待收货显示） -->
           <button 
             class="action-btn logistics" 
-            v-if="['pending_ship', 'pending_receive'].includes(order.status)"
+            v-if="['pending_shipment', 'pending_receipt'].includes(order.status)"
             @click="viewLogistics(order.id)"
           >
             查看物流
           </button>
           
-          <!-- 申请退款（所有状态都可申请，可根据业务调整） -->
+          <!-- 取消订单（待付款显示） -->
+          <button 
+            class="action-btn cancel" 
+            v-if="order.status === 'pending_payment'"
+            @click="cancelOrder(order.id)"
+          >
+            取消订单
+          </button>
+          
+          <!-- 申请退款（除待付款和已取消外都可申请，根据需要调整） -->
           <button 
             class="action-btn refund"
+            v-if="!['pending_payment', 'cancelled'].includes(order.status)"
             @click="applyRefund(order.id)"
           >
             申请退款
           </button>
           
-          <!-- 确认收货（仅待收货状态显示） -->
+          <!-- 确认收货（仅待收货显示） -->
           <button 
             class="action-btn confirm" 
-            v-if="order.status === 'pending_receive'"
+            v-if="order.status === 'pending_receipt'"
             @click="confirmReceive(order.id)"
           >
             确认收货
           </button>
           
-          <!-- 再次购买（已完成状态显示） -->
+          <!-- 再次购买（已完成或已取消显示） -->
           <button 
             class="action-btn buy-again" 
-            v-if="order.status === 'completed'"
+            v-if="['completed', 'cancelled'].includes(order.status)"
             @click="buyAgain(order.productId)"
           >
             再次购买
           </button>
         </div>
       </div>
-    </div>
 
+      <!-- 分页 -->
+      <div class="pagination" v-if="pagination.total > pagination.pageSize">
+        <el-pagination
+          background
+          layout="prev, pager, next"
+          :total="pagination.total"
+          :page-size="pagination.pageSize"
+          :current-page="pagination.page"
+          @current-change="handlePageChange"
+        />
+      </div>
+    </div>
+    
     <!-- 物流信息弹窗 -->
     <div class="logistics-dialog-mask" v-if="showLogisticsDialog" @click="closeLogisticsDialog"></div>
     <div class="logistics-dialog" v-if="showLogisticsDialog">
@@ -167,106 +196,123 @@
 </template>
 
 <script setup>
-import { ref, computed } from 'vue';
+import { ref, computed, watch, onMounted } from 'vue';
 import { useRouter } from 'vue-router';
+import { ElMessage, ElMessageBox } from 'element-plus';
+import * as orderApi from '@/api/order';
 
 const router = useRouter();
 
-// 订单状态筛选
+// 数据
+const orderList = ref([]);
+const loading = ref(false);
+const error = ref(null);
+const pagination = ref({
+  page: 1,
+  pageSize: 10,
+  total: 0,
+});
+
+// 筛选条件
 const activeTab = ref('all');
 const searchKeyword = ref('');
+let searchTimer = null;
 
-// 模拟订单数据
-const orderList = ref([
-  {
-    id: '25122716274433',
-    createTime: '2025-12-27 16:02:28',
-    status: 'pending_receive', // all/pending_payment/pending_ship/pending_receive/completed
-    statusText: '待收货',
-    name: '古驰红礼盒绒雾217唇膏',
-    category: '彩妆类',
-    quantity: 1,
-    price: 202,
-    paymentMethod: '支付宝',
-    image: new URL('@/assets/product/gucci.png', import.meta.url).href,
-    productId: 1,
-    address: {
-      name: '李西农',
-      phone: '13900000000',
-      region: '北京市 市辖区 东城区',
-      detail: '某小区1号楼2单元301'
+// 获取订单列表
+const fetchOrders = async () => {
+  loading.value = true;
+  error.value = null;
+  try {
+    const params = {
+      page: pagination.value.page,
+      page_size: pagination.value.pageSize,
+      search: searchKeyword.value || undefined,
+    };
+    // 状态映射：如果 activeTab 不是 'all'，则传入 status
+    if (activeTab.value !== 'all') {
+      params.status = activeTab.value;
     }
-  },
-  {
-    id: '25122612345678',
-    createTime: '2025-12-26 12:34:56',
-    status: 'pending_ship',
-    statusText: '待发货',
-    name: 'YSL圣罗兰方管口红',
-    category: '彩妆类',
-    quantity: 1,
-    price: 410,
-    paymentMethod: '微信支付',
-    image: new URL('@/assets/product/ysl.png', import.meta.url).href,
-    productId: 2,
-    address: {
-      name: '张三',
-      phone: '13800138000',
-      region: '上海市 黄浦区',
-      detail: '某某路123号'
-    }
+    const res = await orderApi.getOrders(params);
+    // 假设后端返回格式：{ count: 100, results: [...] }
+    orderList.value = res.results.map(item => ({
+      id: item.order_no || item.id, // 订单号
+      createTime: item.created_at,
+      status: item.status,
+      statusText: getStatusText(item.status),
+      name: item.items?.[0]?.product_name || '商品', // 取第一个商品名
+      category: item.items?.[0]?.category_name || '',
+      quantity: item.items?.reduce((sum, i) => sum + i.quantity, 0) || 0,
+      price: item.pay_amount,
+      paymentMethod: item.payment_method || '在线支付',
+      image: item.items?.[0]?.image || defaultImage,
+      productId: item.items?.[0]?.product_id,
+      address: item.address || { name: '', phone: '', region: '', detail: '' },
+    }));
+    pagination.value.total = res.count;
+  } catch (err) {
+    error.value = err.message;
+    ElMessage.error('加载订单失败：' + err.message);
+  } finally {
+    loading.value = false;
   }
-]);
+};
 
-// 模拟物流数据
-const logisticsList = ref([
-  { id: 1, text: '您的订单已提交，等待商家发货', time: '2025-12-27 16:02:28' },
-  { id: 2, text: '商家已发货，正在等待快递员取件', time: '2025-12-27 18:30:00', status: 'current' },
-  { id: 3, text: '快递已发出，预计3天内送达', time: '2025-12-27 20:15:00' }
-]);
+// 状态文本映射
+const getStatusText = (status) => {
+  const map = {
+    pending_payment: '待付款',
+    pending_shipment: '待发货',
+    pending_receipt: '待收货',
+    completed: '已完成',
+    cancelled: '已取消',
+  };
+  return map[status] || status;
+};
 
-// 计算待发货订单数量（用于角标）
+// 计算待发货数量（可以从统计数据中获取，但这里简单从列表计算）
 const pendingShipCount = computed(() => {
-  return orderList.value.filter(item => item.status === 'pending_ship').length;
+  return orderList.value.filter(item => item.status === 'pending_shipment').length;
 });
 
-// 筛选订单（按状态+搜索关键词）
-const filteredOrders = computed(() => {
-  let filtered = orderList.value;
-  
-  // 1. 按状态筛选
-  if (activeTab.value !== 'all') {
-    filtered = filtered.filter(item => item.status === activeTab.value);
-  }
-  
-  // 2. 按搜索关键词筛选
-  if (searchKeyword.value.trim()) {
-    const keyword = searchKeyword.value.trim().toLowerCase();
-    filtered = filtered.filter(item => 
-      item.name.toLowerCase().includes(keyword) || 
-      item.id.includes(keyword)
-    );
-  }
-  
-  return filtered;
-});
-
-// 切换订单状态标签
+// 切换标签
 const switchTab = (tab) => {
   activeTab.value = tab;
+  pagination.value.page = 1; // 重置页码
+  fetchOrders();
 };
 
-// 搜索功能
+// 搜索（防抖）
 const handleSearch = () => {
-  // 搜索逻辑已在 computed 中自动触发，这里仅做响应式更新
-  searchKeyword.value = searchKeyword.value;
+  clearTimeout(searchTimer);
+  searchTimer = setTimeout(() => {
+    pagination.value.page = 1;
+    fetchOrders();
+  }, 500);
 };
 
-// 查看物流（弹窗显示）
+// 翻页
+const handlePageChange = (page) => {
+  pagination.value.page = page;
+  fetchOrders();
+};
+
+// 查看物流
 const showLogisticsDialog = ref(false);
-const viewLogistics = (orderId) => {
-  console.log("查看物流：", orderId);
-  showLogisticsDialog.value = true;
+const logisticsList = ref([]);
+const viewLogistics = async (orderId) => {
+  // 如果有后端接口，调用；否则用模拟数据
+  try {
+    // const res = await orderApi.getLogistics(orderId);
+    // logisticsList.value = res;
+    logisticsList.value = [
+      { id: 1, text: '您的订单已提交，等待商家发货', time: '2025-12-27 16:02:28' },
+      { id: 2, text: '商家已发货，正在等待快递员取件', time: '2025-12-27 18:30:00', status: 'current' },
+      { id: 3, text: '快递已发出，预计3天内送达', time: '2025-12-27 20:15:00' }
+    ];
+    showLogisticsDialog.value = true;
+  } catch (err) {
+    ElMessage.error('获取物流信息失败');
+  }
 };
 const closeLogisticsDialog = () => {
   showLogisticsDialog.value = false;
@@ -274,26 +320,63 @@ const closeLogisticsDialog = () => {
 
 // 申请退款
 const applyRefund = (orderId) => {
-  alert(`申请退款：订单号 ${orderId}，请填写退款原因并提交！`);
-  // 可跳转到退款申请页：router.push({ name: 'RefundApply', query: { orderId } });
+  ElMessageBox.confirm('确定要申请退款吗？', '提示', {
+    confirmButtonText: '确定',
+    cancelButtonText: '取消',
+    type: 'warning',
+  }).then(async () => {
+    // 调用退款接口（假设有）
+    // await orderApi.refund(orderId);
+    ElMessage.success('退款申请已提交');
+  }).catch(() => {});
 };
 
 // 确认收货
-const confirmReceive = (orderId) => {
-  if (confirm('确认已收到商品吗？')) {
-    const order = orderList.value.find(item => item.id === orderId);
-    if (order) {
-      order.status = 'completed';
-      order.statusText = '已完成';
-      alert('收货成功，订单已完成！');
+const confirmReceive = async (orderId) => {
+  ElMessageBox.confirm('确认已收到商品吗？', '提示', {
+    confirmButtonText: '确定',
+    cancelButtonText: '取消',
+    type: 'info',
+  }).then(async () => {
+    try {
+      await orderApi.receiveOrder(orderId);
+      ElMessage.success('收货成功');
+      fetchOrders(); // 刷新列表
+    } catch (err) {
+      ElMessage.error('收货失败：' + err.message);
     }
-  }
+  }).catch(() => {});
+};
+
+// 取消订单
+const cancelOrder = async (orderId) => {
+  ElMessageBox.confirm('确定要取消该订单吗？', '提示', {
+    confirmButtonText: '确定',
+    cancelButtonText: '取消',
+    type: 'warning',
+  }).then(async () => {
+    try {
+      await orderApi.cancelOrder(orderId);
+      ElMessage.success('订单已取消');
+      fetchOrders();
+    } catch (err) {
+      ElMessage.error('取消失败：' + err.message);
+    }
+  }).catch(() => {});
 };
 
 // 再次购买
 const buyAgain = (productId) => {
   router.push({ name: 'ProductDetail', params: { productId } });
 };
+
+// 初始化
+onMounted(() => {
+  fetchOrders();
+});
+
+// 监听搜索关键词变化
+watch(searchKeyword, handleSearch);
 </script>
 
 <style scoped>

@@ -18,19 +18,19 @@
         <!-- 表单标题 -->
         <h2>登录账号</h2>
         
-        <el-form :model="loginForm" ref="loginFormRef" label-width="0px" class="login-form">
-          <el-form-item prop="email">
-            <el-input v-model="loginForm.email" placeholder="请输入邮箱" size="large" prefix-icon="el-icon-message" />
-          </el-form-item>
+        <el-form :model="loginForm" ref="loginFormRef" :rules="rules" label-width="0px" class="login-form">
+    <el-form-item prop="username">
+      <el-input v-model="loginForm.username" placeholder="请输入用户名" size="large" prefix-icon="el-icon-user" />
+    </el-form-item>
 
-          <el-form-item prop="password">
-            <el-input v-model="loginForm.password" type="password" placeholder="请输入密码" size="large" prefix-icon="el-icon-lock" />
-          </el-form-item>
+    <el-form-item prop="password">
+      <el-input v-model="loginForm.password" type="password" placeholder="请输入密码" size="large" prefix-icon="el-icon-lock" />
+    </el-form-item>
 
-          <el-form-item>
-            <el-button type="primary" size="large" class="submit-btn" @click="handleLogin">立即登录</el-button>
-          </el-form-item>
-        </el-form>
+    <el-form-item>
+      <el-button type="primary" size="large" class="submit-btn" @click="handleLogin">立即登录</el-button>
+    </el-form-item>
+  </el-form>
 
         <!-- 跳回注册页的链接 -->
         <div class="form-footer">
@@ -43,34 +43,42 @@
 </template>
 
 <script setup>
-import { ref, reactive } from 'vue'
-import { ElMessage } from 'element-plus'
-import { useRouter } from 'vue-router'
+import { ref, reactive } from 'vue';
+import { ElMessage } from 'element-plus';
+import { useRouter } from 'vue-router';
+import { useUserStore } from '@/store/userStore';
 
-// 表单引用（必须与模板中的 ref="loginFormRef" 一致）
-const loginFormRef = ref(null)
-const router = useRouter()     
+const loginFormRef = ref(null);
+const router = useRouter();
+const userStore = useUserStore();
 
-// 登录表单数据（必须与模板中的 :model="loginForm" 一致）
 const loginForm = reactive({
-  email: '',
-
+  username: '',
   password: ''
-})
+});
 
-// 登录按钮点击事件（必须与模板中的 @click="handleLogin" 一致）
-const handleLogin = () => {
-  // 调用 Element Plus 表单验证
-  loginFormRef.value.validate((valid) => {
-    if (valid) {
-      console.log('登录数据:', loginForm)
-      ElMessage.success('登录成功！')
-      router.push('/home')   // 跳转到首页
-    } else {
-      ElMessage.error('请填写邮箱和密码')
+const rules = {
+  username: [
+    { required: true, message: '请输入用户名', trigger: 'blur' }
+  ],
+  password: [
+    { required: true, message: '请输入密码', trigger: 'blur' }
+  ]
+};
+const handleLogin = async () => {
+  if (!loginFormRef.value) return;
+  try {
+    await loginFormRef.value.validate();
+    await userStore.login(loginForm.username, loginForm.password);
+    // 登录成功后的跳转已经在 store 中处理，无需额外操作
+    ElMessage.success('登录成功');
+  } catch (error) {
+    if (error.message) {
+      ElMessage.error(error.message);
     }
-  })
-}
+  }
+};
+
 </script>
 
 <style scoped>

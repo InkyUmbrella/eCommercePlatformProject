@@ -88,48 +88,106 @@
 <script setup>
 import { ref, computed, onMounted, watch } from 'vue';
 import { useRoute, useRouter } from 'vue-router';
+import { ElMessage, ElPagination } from 'element-plus'; // 假设使用 element-plus
+import * as productApi from '@/api/product';
 
 const route = useRoute();
 const router = useRouter();
 
-const goToDetail = (productId) => {
-  router.push({
-    name: 'ProductDetail', 
-    params: { productId: productId } 
-  });
-};
-
-const goToLogin = () => {
-  router.push('/login');
-};
-
-// 搜索相关变量
+// 搜索筛选
 const searchKeyword = ref('');
-const selectedCategory = ref('name');
+const selectedCategory = ref('name'); // 此字段实际是搜索类型，但后端可能不支持，需要确认
 const selectedBrand = ref('');
 
-// 从路由参数初始化
+// 分页
+const currentPage = ref(1);
+const pageSize = ref(20);
+const total = ref(0);
+
+// 数据
+const productList = ref([]);
+const loading = ref(false);
+const error = ref(null);
+
+// 初始化从路由参数
 const initFromRoute = () => {
   searchKeyword.value = route.query.keyword || '';
   selectedCategory.value = route.query.category || 'name';
   selectedBrand.value = route.query.brand || '';
+  currentPage.value = parseInt(route.query.page) || 1;
+  // pageSize 可能来自路由，但一般不变
 };
-initFromRoute(); // 初始化
-watch(() => route.query, initFromRoute, { immediate: true });
 
-// 处理搜索
+// 获取商品列表
+const fetchProducts = async () => {
+  loading.value = true;
+  error.value = null;
+  try {
+    // 构建请求参数
+    const params = {
+      page: currentPage.value,
+      page_size: pageSize.value,
+    };
+    if (searchKeyword.value) {
+      params.keyword = searchKeyword.value; // 假设后端用 keyword 搜索
+    }
+    if (selectedBrand.value) {
+      params.brand = selectedBrand.value;
+    }
+    // 如果 selectedCategory 不是 'name'，可能需要传递不同的搜索类型，但先忽略或询问后端
+    const res = await productApi.getProducts(params);
+    // 假设后端返回格式为 { count: 100, results: [...] }
+    productList.value = res.results.map(item => ({
+      id: item.id,
+      name: item.name,
+      description: item.short_description || item.description || '',
+      price: item.price,
+      image: item.cover_image ? (item.cover_image.startsWith('http') ? item.cover_image : (import.meta.env.VITE_API_BASE_URL + item.cover_image)) : '',
+      isFavorite: false, // 暂不实现
+    }));
+    total.value = res.count;
+  } catch (err) {
+    error.value = err.message;
+    ElMessage.error('加载商品列表失败：' + err.message);
+  } finally {
+    loading.value = false;
+  }
+};
+
+// 监听路由变化
+watch(() => route.query, () => {
+  initFromRoute();
+  fetchProducts();
+}, { immediate: true });
+
+// 搜索
 const handleSearch = () => {
-  const query = {};
+  const query = { ...route.query }; // 保留其他参数
   if (searchKeyword.value.trim()) {
     query.keyword = searchKeyword.value.trim();
+  } else {
+    delete query.keyword;
   }
-  if (selectedCategory.value !== 'name') {
-    query.category = selectedCategory.value;
-  }
+  // 品牌
   if (selectedBrand.value) {
     query.brand = selectedBrand.value;
+  } else {
+    delete query.brand;
   }
+  // 分类类型？先忽略
+  if (selectedCategory.value !== 'name') {
+    query.category_type = selectedCategory.value; // 需要后端支持
+  } else {
+    delete query.category_type;
+  }
+  // 重置页码
+  query.page = 1;
   router.push({ path: '/products', query });
+};
+
+// 分页变化
+const handlePageChange = (page) => {
+  router.push({ ...route, query: { ...route.query, page } });
 };
 
 // 导航
@@ -137,60 +195,22 @@ const goToHome = () => router.push('/home');
 const goToCart = () => router.push('/cart');
 const goToOrders = () => router.push('/orders');
 const goToProfile = () => router.push('/profile');
+const goToDetail = (id) => router.push({ name: 'ProductDetail', params: { productId: id } });
 
-// 分类文本显示（用于筛选信息）
+// 收藏
+const toggleFavorite = (id) => {
+  const product = productList.value.find(p => p.id === id);
+  if (product) product.isFavorite = !product.isFavorite;
+};
+
+// 分类文本（保持不变）
 const categoryText = computed(() => {
-  const map = {
-    name: '美妆名称',
-    brand: '品牌',
-    price: '价格'
-  };
+  const map = { name: '美妆名称', brand: '品牌', price: '价格' };
   return map[selectedCategory.value] || '全部';
 });
 
-// 商品列表数据（示例）
-const productList = ref([
-  {
-    id: 1,
-    name: '古驰红礼盒金绒雾217唇膏',
-    description: '古驰 (GUCCI) 元旦新年礼物口红红礼盒金绒...',
-    price: '202',
-    image: new URL('@/assets/product/gucci.jpg', import.meta.url).href,
-    isFavorite: false
-  },
-  {
-    id: 2,
-    name: 'YSL圣罗兰方管口红',
-    description: 'YSL圣罗兰方管口红 唇霜N*M裸缪斯化妆...',
-    price: '410',
-    image: new URL('@/assets/product/ysl.jpg', import.meta.url).href,
-    isFavorite: false
-  },
-  {
-    id: 3,
-    name: '迪奥DIOR烈艳蓝金唇膏高订口红',
-    description: '迪奥DIOR【享随身色】烈艳蓝金唇膏高订...',
-    price: '790',
-    image: new URL('@/assets/product/dior.jpg', import.meta.url).href,
-    isFavorite: false
-  },
-  {
-    id: 4,
-    name: '兰蔻箐纯柔雾水唇釉',
-    description: '兰蔻箐纯柔雾水唇釉   196/296丝...',
-    price: '380',
-    image: new URL('@/assets/product/lan.png', import.meta.url).href,
-    isFavorite: false
-  }
-]);
 
-// 收藏功能
-const toggleFavorite = (id) => {
-  const product = productList.value.find(p => p.id === id);
-  if (product) {
-    product.isFavorite = !product.isFavorite;
-  }
-};
+
 </script>
 
 <style scoped>

@@ -1,86 +1,59 @@
-# 电商平台项目（Ecommerce Platform）
+# eCommercePlatformProject
 
-一个前后端分离的电商平台示例项目：
-
+前后端分离电商项目：
 - 后端：Django + Django REST Framework + MySQL
 - 前端：Vue 3 + Vite + Element Plus
-- 文档：部署说明、联调 API 文档、Postman 集合
 
-## 1. 目录结构
+## 目录结构
 
 ```text
-ecommerce_platform_project/
-|- docs/                         # 项目文档（部署、API、SQL）
-|- postman/                      # 按天拆分的请求文件（.request.yaml）
-|- src/
-|  |- backend/                   # Django 后端
-|  |- frontend/
-|- package.json
-|- README.md
+.
+├─ docs/
+│  ├─ postman/
+│  ├─ db_init.sql
+│  ├─ deployment_guide.md
+│  └─ support_api.md
+├─ postman/
+│  └─ collections/
+├─ src/
+│  ├─ backend/
+│  └─ frontend/frontend-core/
+└─ README.md
 ```
 
-## 2. 环境要求
+## 环境要求
 
-| 组件 | 版本建议 |
-|---|---|
-| Python | 3.11+ |
-| MySQL | 8.0+ |
-| Node.js | 20.19+（或 22.12+） |
-| npm | 10+ |
+- Python 3.11+
+- MySQL 8+
+- Node.js 20+
+- npm 10+
 
-## 3. 后端启动（Django）
+## 后端启动
 
 在仓库根目录执行：
 
 ```powershell
 cd src/backend
-```
-
-### 3.1 配置环境变量
-
-```powershell
-Copy-Item .env.example .env
-```
-
-然后按实际数据库信息修改 `.env`，至少包含以下字段：
-
-```dotenv
-DEBUG=True
-SECRET_KEY=replace_me_with_secure_key
-ALLOWED_HOSTS=127.0.0.1,localhost
-
-DB_NAME=replace_with_db_name
-DB_USER=replace_with_db_user
-DB_PASSWORD=replace_with_db_password
-DB_HOST=127.0.0.1
-DB_PORT=3306
-```
-
-### 3.2 初始化数据库（可选脚本）
-
-仓库已提供 MySQL 初始化脚本：`docs/db_init.sql`
-
-```bash
-mysql -u root -p < docs/db_init.sql
-```
-
-### 3.3 安装依赖并迁移
-
-```powershell
 pip install -r requirements.txt
 python manage.py migrate
 python manage.py createsuperuser
 python manage.py runserver
 ```
 
-默认访问：
+默认地址：`http://127.0.0.1:8000`
 
-- 管理后台：`http://127.0.0.1:8000/admin/`
-- API 前缀：`/api/users/`、`/api/cart/`、`/api/orders/`、`/api/payment`、`/api/support/`
+### 后端主要 API 前缀
 
-## 4. 前端启动（Vue 3 + Vite）
+- `/api/users/`
+- `/api/cart/`
+- `/api/orders/`
+- `/api/products/`
+- `/api/categories/`
+- `/api/home/`
+- `/api/payment/`
+- `/api/support/`
 
-在仓库根目录执行：
+## 前端启动
 
 ```powershell
 cd src/frontend/frontend-core
@@ -88,64 +61,63 @@ npm install
 npm run dev
 ```
 
-默认访问：
+默认地址：`http://127.0.0.1:5173`
 
-- 前端开发地址：`http://127.0.0.1:5173/`（或终端输出地址）
-
-## 5. 常用命令
-
-### 后端
+前端打包：
 
 ```powershell
-cd src/backend
-python manage.py test
-```
-
-### 前端
-
-```powershell
-cd src/frontend/frontend-core
 npm run build
-npm run preview
 ```
 
-## 6. 文档导航
+## 订单主链路（当前已实现）
 
-- 部署说明：`docs/deployment_guide.md`
-- 数据库初始化脚本：`docs/db_init.sql`
-- 支撑 API（联调文档）：`docs/support_api.md`
-- 订单状态说明：`src/backend/docs/order_status.md`
-- Postman 集合（JSON）：
-    - `docs/postman/day3_users_auth.postman_collection.json`
-    - `docs/postman/day4_addresses.postman_collection.json`
-- Postman 请求（YAML）：
-    - `postman/collections/Day3 Users Auth APIs/`
-    - `postman/collections/Day4 Users Address APIs/`
-    - `postman/collections/Day5-6 Cart APIs/`
-    - `postman/collections/Day7 Orders APIs/`
+- 确认订单：`POST /api/orders/confirm/`
+- 创建订单：`POST /api/orders/`
+- 支付订单：`POST /api/orders/{order_id}/pay/`
+- 订单列表：`GET /api/orders/?page=1&page_size=10&status=&search=`
+- 订单详情：`GET /api/orders/{order_id}/`
+- 取消订单：`POST /api/orders/{order_id}/cancel/`
+- 确认收货：`POST /api/orders/{order_id}/confirm-receive/`
+- 发起售后：`POST /api/orders/{order_id}/refund/`
+- 售后完成：`POST /api/orders/{order_id}/refund-complete/`
+- 查看物流：`GET /api/orders/{order_id}/logistics/`
 
-## 7. 技术栈
+## 商品与首页接口
 
-后端主要依赖（见 `src/backend/requirements.txt`）：
+- 商品列表：`GET /api/products/`
+- 商品详情：`GET /api/products/{id}/`
+- 新品列表：`GET /api/products/new/`
+- 分类列表：`GET /api/categories/`
+- 首页轮播：`GET /api/home/banners/`
 
-- Django 6.0.2
-- djangorestframework 3.16.1
-- djangorestframework-simplejwt 5.5.1
-- django-cors-headers 4.9.0
-- drf-yasg 1.21.15
-- mysqlclient 2.2.8 / PyMySQL 1.1.2
+## Postman 文件
 
-前端主要依赖：
+### docs/postman（JSON，可直接导入）
 
-- Vue 3
-- Vite
-- Vue Router
-- Element Plus
-- Axios
+- `docs/postman/day3_users_auth.postman_collection.json`
+- `docs/postman/day4_addresses.postman_collection.json`
+- `docs/postman/day5_6_cart.postman_collection.json`
+- `docs/postman/day7_8_orders.postman_collection.json`
 
-## 8. 常见问题
+### postman/collections（YAML）
 
-- 启动时报 `SECRET_KEY is required`：检查 `src/backend/.env` 是否存在且 `SECRET_KEY` 非空。
-- MySQL 连接失败：核对 `DB_*` 配置与数据库权限。
-- 前端命令无效：该项目使用 Vite，请使用 `npm run dev`，不是 `npm run serve`。
-- 支付接口路径看起来像 `paymentorders`：这是当前主路由 `api/payment`（无末尾 `/`）与子路由拼接导致，详见 `docs/support_api.md` 的路径说明。
+- `postman/collections/Day3 Users Auth APIs/`
+- `postman/collections/Day4 Users Address APIs/`
+- `postman/collections/Day5-6 Cart APIs/`
+- `postman/collections/Day7 Orders APIs/`
+
+## 联调建议顺序
+
+1. 注册/登录，拿到 `access_token`
+2. 新增并设置默认地址
+3. 创建商品（后台）并加入购物车
+4. 订单确认 -> 创建 -> 支付
+5. 订单列表/详情
+6. 取消、收货、售后、物流接口验证
+
+## 常见问题
+
+- 401 未授权：检查 `Authorization: Bearer {{access_token}}`
+- MySQL 连接失败：检查 `.env` 中 `DB_*` 配置
+- 迁移异常：先 `python manage.py showmigrations` 再补齐缺失迁移
+- 前端构建 warning（chunk 体积大）：不影响功能，可后续做按路由拆包优化

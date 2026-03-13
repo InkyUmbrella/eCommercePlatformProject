@@ -81,6 +81,8 @@ def _calculate_order_amount(order):
 def _serialize_order(order, include_items=False):
     items_amount, shipping_fee, pay_amount = _calculate_order_amount(order)
     payload = {
+        "id": order.id,
+        "order_id": order.id,
         "order_no": f"ORD{order.id:08d}",
         "status": order.status,
         "address": _serialize_address(order.address),

@@ -3,6 +3,7 @@ from decimal import Decimal
 
 from django.db import transaction
 from django.shortcuts import get_object_or_404
+from django.db.models import Q
 from rest_framework.decorators import api_view, permission_classes
 from rest_framework.permissions import IsAuthenticated
 
@@ -42,10 +43,16 @@ def _serialize_confirm_item(item):
 
 
 def _serialize_order_item(order_item):
+    image = ""
+    if order_item.product.cover_image:
+        image = order_item.product.cover_image.url
     return {
         "id": order_item.id,
         "product_id": order_item.product_id,
+        "product_name": order_item.product.name,
         "title": order_item.product.name,
+        "category_name": order_item.product.category.name if order_item.product.category_id else "",
+        "image": image,
         "price": str(order_item.price),
         "quantity": order_item.quantity,
         "subtotal": str(order_item.price * order_item.quantity),
@@ -104,10 +111,41 @@ def orders_root(request):
         orders = (
             Order.objects.filter(user=request.user)
             .select_related("address")
-            .prefetch_related("order_items__product")
+            .prefetch_related("order_items__product__category")
             .order_by("-id")
         )
-        return ok([_serialize_order(order, include_items=True) for order in orders])
+        status = str(request.query_params.get("status", "")).strip()
+        if status:
+            orders = orders.filter(status=status)
+
+        search = str(request.query_params.get("search", "")).strip()
+        if search:
+            query = Q(order_items__product__name__icontains=search)
+            if search.isdigit():
+                query = query | Q(id=int(search))
+            orders = orders.filter(query).distinct()
+
+        try:
+            page = max(int(request.query_params.get("page", 1) or 1), 1)
+        except (TypeError, ValueError):
+            page = 1
+        try:
+            page_size = max(min(int(request.query_params.get("page_size", 10) or 10), 100), 1)
+        except (TypeError, ValueError):
+            page_size = 10
+
+        total = orders.count()
+        start = (page - 1) * page_size
+        end = start + page_size
+        page_orders = orders[start:end]
+        return ok(
+            {
+                "count": total,
+                "page": page,
+                "page_size": page_size,
+                "results": [_serialize_order(order, include_items=True) for order in page_orders],
+            }
+        )
 
     return order_create(request)
 
@@ -116,7 +154,7 @@ def orders_root(request):
 @permission_classes([IsAuthenticated])
 def order_detail(request, order_id):
     order = get_object_or_404(
-        Order.objects.select_related("address").prefetch_related("order_items__product"),
+        Order.objects.select_related("address").prefetch_related("order_items__product__category"),
         id=order_id,
         user=request.user,
     )
@@ -296,3 +334,20 @@ def order_refund_complete(request, order_id):
     order.change_status("completed")
     logger.info("order refund completed user=%s order=%s", request.user.id, order.id)
     return ok(_serialize_order_status(order, status_before), "refund processing completed")
+
+
+@api_view(["GET"])
+@permission_classes([IsAuthenticated])
+def order_logistics(request, order_id):
+    order = get_object_or_404(Order, id=order_id, user=request.user)
+    return ok(
+        {
+            "order_id": order.id,
+            "company": "顺丰速运",
+            "tracking_no": f"SF{order.id:010d}",
+            "timeline": [
+                {"text": "订单已提交", "time": order.created_at.isoformat()},
+                {"text": "商家已发货", "time": order.updated_at.isoformat()},
+            ],
+        }
+    )

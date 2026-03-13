@@ -8,6 +8,7 @@ from .views import (
     order_confirm_receive,
     order_refund,
     order_refund_complete,
+    order_logistics,
 )
 
 urlpatterns = [
@@ -19,4 +20,5 @@ urlpatterns = [
     path("<int:order_id>/confirm-receive/", order_confirm_receive),
     path("<int:order_id>/refund/", order_refund),
     path("<int:order_id>/refund-complete/", order_refund_complete),
+    path("<int:order_id>/logistics/", order_logistics),
 ]

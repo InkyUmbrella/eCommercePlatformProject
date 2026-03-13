@@ -1,0 +1,12 @@
+$kind: http-request
+name: 7. Confirm Receive
+url: "{{base_url}}/api/orders/{{order_id}}/confirm-receive/"
+method: POST
+headers:
+  Content-Type: application/json
+  Authorization: Bearer {{access_token}}
+body:
+  type: text
+  content: |-
+    {}
+order: 7000

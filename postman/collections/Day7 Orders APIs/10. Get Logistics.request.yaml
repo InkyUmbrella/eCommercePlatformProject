@@ -1,0 +1,7 @@
+$kind: http-request
+name: 10. Get Logistics
+url: "{{base_url}}/api/orders/{{order_id}}/logistics/"
+method: GET
+headers:
+  Authorization: Bearer {{access_token}}
+order: 10000

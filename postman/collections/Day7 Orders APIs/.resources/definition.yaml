@@ -1,5 +1,5 @@
-﻿$kind: collection
-description: "Day7 for 分工1: order confirm + create"
+$kind: collection
+description: "Day7-8 for �ֹ�1: order confirm/create + lifecycle actions"
 variables:
   base_url: http://127.0.0.1:8000
   access_token: ""

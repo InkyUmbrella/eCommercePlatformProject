@@ -1,0 +1,153 @@
+{
+  "info": {
+    "_postman_id": "9e53f93c-5d18-4f5d-9f08-d89d37c41301",
+    "name": "Day5-6 Cart APIs",
+    "description": "Day5-6 for role-1: cart CRUD + select-all",
+    "schema": "https://schema.getpostman.com/json/collection/v2.1.0/collection.json"
+  },
+  "item": [
+    {
+      "name": "0. Login (save access token)",
+      "event": [
+        {
+          "listen": "test",
+          "script": {
+            "type": "text/javascript",
+            "exec": [
+              "let jsonData = {};",
+              "try { jsonData = pm.response.json(); } catch (e) { jsonData = {}; }",
+              "const access = jsonData?.data?.access;",
+              "if (access) pm.collectionVariables.set('access_token', access);"
+            ]
+          }
+        }
+      ],
+      "request": {
+        "method": "POST",
+        "header": [
+          { "key": "Content-Type", "value": "application/json" }
+        ],
+        "body": {
+          "mode": "raw",
+          "raw": "{\n  \"username\": \"test_user_001\",\n  \"password\": \"123456\"\n}"
+        },
+        "url": {
+          "raw": "{{base_url}}/api/users/login/",
+          "host": ["{{base_url}}"],
+          "path": ["api", "users", "login", ""]
+        }
+      },
+      "response": []
+    },
+    {
+      "name": "1. Get Cart",
+      "request": {
+        "method": "GET",
+        "header": [
+          { "key": "Authorization", "value": "Bearer {{access_token}}" }
+        ],
+        "url": {
+          "raw": "{{base_url}}/api/cart/",
+          "host": ["{{base_url}}"],
+          "path": ["api", "cart", ""]
+        }
+      },
+      "response": []
+    },
+    {
+      "name": "2. Add Cart Item (save cart_item_id)",
+      "event": [
+        {
+          "listen": "test",
+          "script": {
+            "type": "text/javascript",
+            "exec": [
+              "let jsonData = {};",
+              "try { jsonData = pm.response.json(); } catch (e) { jsonData = {}; }",
+              "const id = jsonData?.data?.item?.id;",
+              "if (id) pm.collectionVariables.set('cart_item_id', String(id));"
+            ]
+          }
+        }
+      ],
+      "request": {
+        "method": "POST",
+        "header": [
+          { "key": "Content-Type", "value": "application/json" },
+          { "key": "Authorization", "value": "Bearer {{access_token}}" }
+        ],
+        "body": {
+          "mode": "raw",
+          "raw": "{\n  \"product_id\": {{product_id}},\n  \"quantity\": 1\n}"
+        },
+        "url": {
+          "raw": "{{base_url}}/api/cart/items/",
+          "host": ["{{base_url}}"],
+          "path": ["api", "cart", "items", ""]
+        }
+      },
+      "response": []
+    },
+    {
+      "name": "3. Update Cart Item Quantity/Selected",
+      "request": {
+        "method": "PATCH",
+        "header": [
+          { "key": "Content-Type", "value": "application/json" },
+          { "key": "Authorization", "value": "Bearer {{access_token}}" }
+        ],
+        "body": {
+          "mode": "raw",
+          "raw": "{\n  \"quantity\": 2,\n  \"selected\": true\n}"
+        },
+        "url": {
+          "raw": "{{base_url}}/api/cart/items/{{cart_item_id}}/",
+          "host": ["{{base_url}}"],
+          "path": ["api", "cart", "items", "{{cart_item_id}}", ""]
+        }
+      },
+      "response": []
+    },
+    {
+      "name": "4. Select All Cart Items",
+      "request": {
+        "method": "PATCH",
+        "header": [
+          { "key": "Content-Type", "value": "application/json" },
+          { "key": "Authorization", "value": "Bearer {{access_token}}" }
+        ],
+        "body": {
+          "mode": "raw",
+          "raw": "{\n  \"selected\": true\n}"
+        },
+        "url": {
+          "raw": "{{base_url}}/api/cart/select-all/",
+          "host": ["{{base_url}}"],
+          "path": ["api", "cart", "select-all", ""]
+        }
+      },
+      "response": []
+    },
+    {
+      "name": "5. Delete Cart Item",
+      "request": {
+        "method": "DELETE",
+        "header": [
+          { "key": "Authorization", "value": "Bearer {{access_token}}" }
+        ],
+        "url": {
+          "raw": "{{base_url}}/api/cart/items/{{cart_item_id}}/",
+          "host": ["{{base_url}}"],
+          "path": ["api", "cart", "items", "{{cart_item_id}}", ""]
+        }
+      },
+      "response": []
+    }
+  ],
+  "variable": [
+    { "key": "base_url", "value": "http://127.0.0.1:8000" },
+    { "key": "access_token", "value": "" },
+    { "key": "product_id", "value": "" },
+    { "key": "cart_item_id", "value": "" }
+  ]
+}

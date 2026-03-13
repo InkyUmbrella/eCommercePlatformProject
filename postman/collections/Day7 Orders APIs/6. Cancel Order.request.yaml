@@ -1,0 +1,12 @@
+$kind: http-request
+name: 6. Cancel Order
+url: "{{base_url}}/api/orders/{{order_id}}/cancel/"
+method: POST
+headers:
+  Content-Type: application/json
+  Authorization: Bearer {{access_token}}
+body:
+  type: text
+  content: |-
+    {}
+order: 6000

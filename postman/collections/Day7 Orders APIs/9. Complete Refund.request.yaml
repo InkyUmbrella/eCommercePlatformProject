@@ -1,0 +1,12 @@
+$kind: http-request
+name: 9. Complete Refund
+url: "{{base_url}}/api/orders/{{order_id}}/refund-complete/"
+method: POST
+headers:
+  Content-Type: application/json
+  Authorization: Bearer {{access_token}}
+body:
+  type: text
+  content: |-
+    {}
+order: 9000

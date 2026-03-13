@@ -1,0 +1,20 @@
+$kind: http-request
+name: 4. List Orders
+url: "{{base_url}}/api/orders/?page=1&page_size=10"
+method: GET
+headers:
+  Authorization: Bearer {{access_token}}
+scripts:
+  - type: afterResponse
+    language: text/javascript
+    code: |-
+      let jsonData = {};
+      try {
+          jsonData = pm.response.json();
+      } catch (e) {
+          jsonData = {};
+      }
+
+      const firstId = jsonData?.data?.results?.[0]?.id;
+      if (firstId) pm.collectionVariables.set('order_id', String(firstId));
+order: 4000

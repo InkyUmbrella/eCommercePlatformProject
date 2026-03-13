@@ -1,0 +1,7 @@
+$kind: http-request
+name: 5. Order Detail
+url: "{{base_url}}/api/orders/{{order_id}}/"
+method: GET
+headers:
+  Authorization: Bearer {{access_token}}
+order: 5000

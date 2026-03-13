@@ -31,7 +31,7 @@ class Order(models.Model):
     }
 
     def __str__(self):
-        return f"���� {self.id} - {self.status}"
+        return f"订单 {self.id} - {self.status}"
 
     def change_status(self, new_status):
         if self.status == "cancelled":

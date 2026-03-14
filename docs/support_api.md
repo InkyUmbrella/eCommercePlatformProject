@@ -1,6 +1,6 @@
-# 支撑 API 草案
+# 接口定义文档（终稿）
 
-最后更新：2026-03-11
+最后更新：2026-03-14
 
 ## 1. 文档定位
 
@@ -8,6 +8,14 @@
 - 订单状态补充文档：`src/backend/docs/order_status.md`
 
 > 本文档按当前后端代码实际实现整理，便于先联调、再细化。
+
+### 1.1 接口状态标记说明
+
+- `已实现`：后端路由已可调用，可直接联调。
+- `规划接口`：用于前后端对齐的契约定义，当前后端尚未上线。
+
+当前文档中的用户认证、地址、购物车、下单确认、创建订单、支付、客服留言为 `已实现`；
+订单发货、确认收货、商品与分类公开接口为 `规划接口`。
 
 ## 2. 通用约定
 
@@ -20,8 +28,8 @@
   - 建议：后续将主路由调整为 `path("api/payment/", include("payment.urls"))`，调整后路径可读性更高：`/api/payment/orders/<order_id>/pay/`。
 - 客服：`/api/support/`
 - 用户：`/api/users/`
-- 商品：`/api/products/`（草案，待实现）
-- 分类：`/api/categories/`（草案，待实现）
+- 商品：`/api/products/`（规划中，未上线）
+- 分类：`/api/categories/`（规划中，未上线）
 
 ### 2.2 通用响应结构
 
@@ -50,7 +58,7 @@
 - `200 OK`：请求成功（业务成功/业务失败都可能返回，需结合 `code` 判断）
 - `400 Bad Request`：参数校验失败
 - `401 Unauthorized`：未登录、token 无效/过期、用户名密码错误
-- `403 Forbidden`：已认证但无权限（当前草案接口暂未单独定义）
+- `403 Forbidden`：已认证但无权限（当前部分接口暂未单独定义）
 - `500 Internal Server Error`：服务端异常
 
 #### 业务状态码（响应体 `code`）
@@ -399,6 +407,23 @@
 
 状态码：`200/400/401/404`
 
+响应示例：
+
+```json
+{
+	"code": 0,
+	"message": "order created",
+	"data": {
+		"order_id": 10001,
+		"order_no": "ORD00010001",
+		"status": "pending_payment",
+		"items_amount": "199.00",
+		"shipping_fee": "0.00",
+		"pay_amount": "199.00"
+	}
+}
+```
+
 失败场景（示例）：
 
 - `address_id is required`
@@ -406,7 +431,7 @@
 - `product is inactive`
 - `insufficient stock`
 
-### 4.3 订单发货（待实现，先定义契约）
+### 4.3 订单发货（规划接口，未上线）
 
 > 当前后端代码尚未暴露发货路由；以下为联调建议契约。
 
@@ -427,7 +452,7 @@
 
 - 仅允许 `pending_shipment -> pending_receipt`
 
-成功响应建议：
+响应示例（建议）：
 
 ```json
 {
@@ -443,7 +468,7 @@
 }
 ```
 
-### 4.4 确认收货（待实现，先定义契约）
+### 4.4 确认收货（规划接口，未上线）
 
 > 当前后端代码尚未暴露确认收货路由；以下为联调建议契约。
 
@@ -457,7 +482,7 @@
 
 - 仅允许 `pending_receipt -> completed`
 
-成功响应建议：
+响应示例（建议）：
 
 ```json
 {
@@ -745,6 +770,19 @@
 
 状态码：`200/401`
 
+响应示例：
+
+```json
+{
+	"code": 0,
+	"message": "登录成功",
+	"data": {
+		"access": "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.access_token_demo",
+		"refresh": "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.refresh_token_demo"
+	}
+}
+```
+
 ### 8.3 刷新 Token
 
 - 方法：`POST`
@@ -831,9 +869,9 @@
 - 管理后台已可维护分类和商品（`src/backend/products/admin.py`）。
 - 当前未挂载公开 API：`backendCore/urls.py` 中尚未 `include("products.urls")`，且 `products/views.py` 暂无接口实现。
 
-以下为对齐当前数据结构的接口草案，供后续开发与联调使用。
+以下为对齐当前数据结构的规划接口定义，供后续开发与联调使用。
 
-### 9.2 商品列表（草案）
+### 9.2 商品列表（规划接口）
 
 - 方法：`GET`
 - 路径：`/api/products/`
@@ -869,7 +907,35 @@
 
 状态码（建议）：`200/400`
 
-### 9.3 商品详情（草案）
+响应示例（规划接口）：
+
+```json
+{
+	"code": 0,
+	"message": "success",
+	"data": {
+		"list": [
+			{
+				"id": 101,
+				"name": "YSL 方管口红",
+				"price": "199.00",
+				"stock": 88,
+				"is_active": true,
+				"category_id": 10,
+				"category_name": "口红",
+				"cover_image": "/media/products/ysl-101.jpg"
+			}
+		],
+		"pagination": {
+			"page": 1,
+			"page_size": 20,
+			"total": 1
+		}
+	}
+}
+```
+
+### 9.3 商品详情（规划接口）
 
 - 方法：`GET`
 - 路径：`/api/products/{product_id}/`
@@ -895,7 +961,7 @@
 
 状态码（建议）：`200/404`
 
-### 9.4 分类列表（草案）
+### 9.4 分类列表（规划接口）
 
 - 方法：`GET`
 - 路径：`/api/categories/`
@@ -913,7 +979,7 @@
 
 状态码（建议）：`200`
 
-### 9.5 分类树（草案）
+### 9.5 分类树（规划接口）
 
 - 方法：`GET`
 - 路径：`/api/categories/tree/`
@@ -930,7 +996,7 @@
 
 状态码（建议）：`200`
 
-### 9.6 分类下商品（草案）
+### 9.6 分类下商品（规划接口）
 
 - 方法：`GET`
 - 路径：`/api/categories/{category_id}/products/`
@@ -942,9 +1008,9 @@
 
 
 
-## 10. 落文档建议流程
+## 10. 文档维护流程
 
-1. 先以本文档为“联调草案”，保证每个接口都有：方法、路径、请求体、成功/失败示例。
+1. 以本文档为唯一联调基线，保证每个接口都有：方法、路径、请求体、成功/失败示例。
 2. 前后端联调后，补充字段说明（类型、是否必填、枚举值）。
 3. 跟随代码变更同步更新：每改 `urls.py`/`views.py`，同时改 `docs/support_api.md`。
 4. 版本化维护：按里程碑增加 `v1/v2` 变更记录。

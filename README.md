@@ -114,8 +114,10 @@ npm run preview
 ## 6. 文档导航
 
 - 部署说明：`docs/deployment_guide.md`
+- 录屏脚本大纲：`docs/screen_recording_script_outline.md`
+- 最终交付规范：`docs/final_delivery_spec.md`
 - 数据库初始化脚本：`docs/db_init.sql`
-- 支撑 API（联调文档）：`docs/support_api.md`
+- 接口定义文档（终稿）：`docs/support_api.md`
 - 订单状态说明：`src/backend/docs/order_status.md`
 - Postman 集合（JSON）：
   - `docs/postman/day3_users_auth.postman_collection.json`

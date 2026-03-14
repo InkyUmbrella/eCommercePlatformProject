@@ -1,6 +1,8 @@
-# 电商平台后端部署说明（草案）
+# 电商平台后端部署说明（终稿）
 
-> 目标：完成后端基础部署，覆盖 **MySQL 建库、环境变量、数据库迁移、创建超级管理员**。
+最后更新：2026-03-14
+
+> 目标：完成后端基础部署，覆盖 **MySQL 建库、数据库导入、环境变量、数据库迁移、创建超级管理员**。
 > 
 > 适用范围：当前仓库 Django 后端（`src/backend`），不包含 Nginx / Gunicorn / HTTPS 等生产网关配置。
 
@@ -45,6 +47,41 @@ FLUSH PRIVILEGES;
 ```bash
 mysql -u root -p < docs/db_init.sql
 ```
+
+### 2.4 数据库导入（推荐）
+
+> 用于快速导入初始化结构/测试数据。请先确认目标数据库已创建，且 `DB_NAME` 与导入目标一致。
+
+#### 方式 A：导入仓库初始化脚本（推荐）
+
+从仓库根目录执行：
+
+```bash
+mysql -u ecom_user -p ecommerce_platform < docs/db_init.sql
+```
+
+如果你已经在 `src/backend` 目录，可改用：
+
+```bash
+mysql -u ecom_user -p ecommerce_platform < ..\..\docs\db_init.sql
+```
+
+#### 方式 B：导入已有 SQL 备份文件（可选）
+
+```bash
+mysql -u ecom_user -p ecommerce_platform < your_backup.sql
+```
+
+#### 导入后校验
+
+登录 MySQL 并检查目标库：
+
+```sql
+USE ecommerce_platform;
+SHOW TABLES;
+```
+
+若需继续使用 Django 迁移体系，导入后仍建议执行一次迁移（见第 5 节）。
 
 ---
 

@@ -35,6 +35,8 @@
         </div>
       </div>
       <div class="header-right">
+        <button class="nav-btn" @click="handleSwitchAccount">切换账号</button>
+        <button class="nav-btn" @click="handleLogout">退出登录</button>
         <button class="nav-btn" @click="goToHome">首页</button>
         <button class="nav-btn" @click="goToCart">购物车</button>
         <button class="nav-btn" @click="goToOrders">订单</button>
@@ -112,8 +114,10 @@ import { ref, onMounted, onUnmounted } from 'vue';
 import { useRouter } from 'vue-router';
 import { ElMessage } from 'element-plus';
 import * as homeApi from '@/api/home';
+import { useAuthActions } from '@/composables/useAuthActions';
 
 const router = useRouter();
+const { logout, switchAccount } = useAuthActions();
 const baseURL = import.meta.env.VITE_API_BASE_URL || 'http://127.0.0.1:8000';
 
 const banners = ref([]);
@@ -226,6 +230,16 @@ const goToHome = () => router.push('/home');
 const goToCart = () => router.push('/cart');
 const goToOrders = () => router.push('/orders');
 const goToSupport = () => router.push({ name: 'Support' });
+const handleLogout = async () => {
+  try {
+    await logout();
+  } catch (_) {}
+};
+const handleSwitchAccount = async () => {
+  try {
+    await switchAccount();
+  } catch (_) {}
+};
 
 onMounted(() => {
   fetchHomeData();

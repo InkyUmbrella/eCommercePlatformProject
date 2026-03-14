@@ -1,10 +1,18 @@
+from django import forms
 from django.contrib import admin, messages
 from django.http import HttpResponseRedirect
+from django.shortcuts import get_object_or_404, render
 from django.urls import path, reverse
 from django.utils import timezone
 from django.utils.html import mark_safe
 
 from .models import Order, OrderItem
+
+
+class OrderShipForm(forms.Form):
+    express_company = forms.CharField(label="物流公司", max_length=50)
+    express_no = forms.CharField(label="物流单号", max_length=64)
+    shipping_remark = forms.CharField(label="发货备注", max_length=255, widget=forms.Textarea(attrs={"rows": 4}))
 
 
 class OrderItemInline(admin.TabularInline):
@@ -32,7 +40,6 @@ class OrderAdmin(admin.ModelAdmin):
     readonly_fields = ("created_at", "updated_at", "shipped_at", "next_actions_preview")
     actions = (
         "mark_as_paid",
-        "mark_as_shipped",
         "mark_as_received",
         "approve_refund",
         "cancel_selected_orders",
@@ -45,7 +52,7 @@ class OrderAdmin(admin.ModelAdmin):
     def next_actions_preview(self, obj):
         action_map = {
             "pending_payment": "标记已支付、取消订单",
-            "pending_shipment": "一键发货、取消订单",
+            "pending_shipment": "填写物流信息并发货、取消订单",
             "pending_receipt": "确认完成",
             "completed": "无可用操作",
             "refund_processing": "同意退款、取消订单",
@@ -60,7 +67,7 @@ class OrderAdmin(admin.ModelAdmin):
             buttons.append(self._action_link(obj, "pay", "标记已支付"))
             buttons.append(self._action_link(obj, "cancel", "取消订单"))
         elif obj.status == "pending_shipment":
-            buttons.append(self._action_link(obj, "ship", "一键发货"))
+            buttons.append(self._action_link(obj, "ship", "去发货"))
             buttons.append(self._action_link(obj, "cancel", "取消订单"))
         elif obj.status == "pending_receipt":
             buttons.append(self._action_link(obj, "receive", "确认完成"))
@@ -123,7 +130,16 @@ class OrderAdmin(admin.ModelAdmin):
                 before_save(order)
             order.change_status(to_status)
             if before_save:
-                order.save(update_fields=["status", "express_company", "express_no", "shipped_at", "updated_at"])
+                order.save(
+                    update_fields=[
+                        "status",
+                        "express_company",
+                        "express_no",
+                        "shipping_remark",
+                        "shipped_at",
+                        "updated_at",
+                    ]
+                )
             self.message_user(request, success_message, level=messages.SUCCESS)
         except ValueError as exc:
             self.message_user(request, str(exc), level=messages.ERROR)
@@ -139,19 +155,48 @@ class OrderAdmin(admin.ModelAdmin):
         )
 
     def process_ship(self, request, order_id):
-        def fill_shipping(order):
-            order.express_company = order.express_company or "默认物流"
-            order.express_no = order.express_no or f"AUTO{order.id:010d}"
-            order.shipped_at = order.shipped_at or timezone.now()
+        order = get_object_or_404(Order, pk=order_id)
+        if order.status != "pending_shipment":
+            self.message_user(request, "当前订单状态不允许发货。", level=messages.WARNING)
+            return self._redirect_to_changelist()
 
-        return self._transition_one(
-            request,
-            order_id,
-            from_statuses={"pending_shipment"},
-            to_status="pending_receipt",
-            success_message="订单已发货，进入待收货。",
-            before_save=fill_shipping,
-        )
+        if request.method == "POST":
+            form = OrderShipForm(request.POST)
+            if form.is_valid():
+                cleaned = form.cleaned_data
+
+                def fill_shipping(target_order):
+                    target_order.express_company = cleaned["express_company"]
+                    target_order.express_no = cleaned["express_no"]
+                    target_order.shipping_remark = cleaned["shipping_remark"]
+                    target_order.shipped_at = timezone.now()
+
+                return self._transition_one(
+                    request,
+                    order_id,
+                    from_statuses={"pending_shipment"},
+                    to_status="pending_receipt",
+                    success_message="订单已发货，进入待收货。",
+                    before_save=fill_shipping,
+                )
+        else:
+            form = OrderShipForm(
+                initial={
+                    "express_company": order.express_company,
+                    "express_no": order.express_no,
+                    "shipping_remark": order.shipping_remark,
+                }
+            )
+
+        context = {
+            **self.admin_site.each_context(request),
+            "opts": self.model._meta,
+            "original": order,
+            "title": f"订单 {order.id} 发货",
+            "form": form,
+            "media": self.media + form.media,
+        }
+        return render(request, "admin/orders/order/ship_form.html", context)
 
     def process_receive(self, request, order_id):
         return self._transition_one(
@@ -203,7 +248,16 @@ class OrderAdmin(admin.ModelAdmin):
                     before_save(order)
                 order.change_status(to_status)
                 if before_save:
-                    order.save(update_fields=["status", "express_company", "express_no", "shipped_at", "updated_at"])
+                    order.save(
+                        update_fields=[
+                            "status",
+                            "express_company",
+                            "express_no",
+                            "shipping_remark",
+                            "shipped_at",
+                            "updated_at",
+                        ]
+                    )
                 updated_count += 1
             except ValueError:
                 skipped_count += 1
@@ -229,22 +283,6 @@ class OrderAdmin(admin.ModelAdmin):
             from_statuses={"pending_payment"},
             to_status="pending_shipment",
             success_message="已标记 {count} 个订单为待发货。",
-        )
-
-    @admin.action(description="将选中的待发货订单标记为已发货")
-    def mark_as_shipped(self, request, queryset):
-        def fill_shipping(order):
-            order.express_company = order.express_company or "默认物流"
-            order.express_no = order.express_no or f"AUTO{order.id:010d}"
-            order.shipped_at = order.shipped_at or timezone.now()
-
-        self._transition_orders(
-            request,
-            queryset,
-            from_statuses={"pending_shipment"},
-            to_status="pending_receipt",
-            success_message="已标记 {count} 个订单为已发货。",
-            before_save=fill_shipping,
         )
 
     @admin.action(description="将选中的待收货订单标记为已完成")

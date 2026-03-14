@@ -21,6 +21,7 @@ class Order(models.Model):
     aftersale_used = models.BooleanField("是否已申请过售后", default=False)
     express_company = models.CharField("物流公司", max_length=50, blank=True, default="")
     express_no = models.CharField("物流单号", max_length=64, blank=True, default="")
+    shipping_remark = models.CharField("发货备注", max_length=255, blank=True, default="")
     shipped_at = models.DateTimeField("发货时间", null=True, blank=True)
     created_at = models.DateTimeField("创建时间", auto_now_add=True)
     updated_at = models.DateTimeField("更新时间", auto_now=True)

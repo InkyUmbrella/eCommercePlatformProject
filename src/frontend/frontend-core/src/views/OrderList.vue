@@ -10,6 +10,8 @@
         <p class="tip-text">查看您的美妆订单，跟踪物流状态</p>
       </div>
        <div class="header-right">
+        <button class="nav-btn" @click="handleSwitchAccount">切换账号</button>
+        <button class="nav-btn" @click="handleLogout">退出登录</button>
         <button class="nav-btn" @click="goToHome">首页</button>
         <button class="nav-btn" @click="goToCart">购物车</button>
         <button class="nav-btn" @click="goToOrders">订单</button>
@@ -196,9 +198,11 @@ import { ref, computed, watch, onMounted } from 'vue';
 import { useRouter } from 'vue-router';
 import { ElMessage, ElMessageBox } from 'element-plus';
 import * as orderApi from '@/api/order';
+import { useAuthActions } from '@/composables/useAuthActions';
 
 const router = useRouter();
 const baseURL = import.meta.env.VITE_API_BASE_URL || 'http://127.0.0.1:8000';
+const { logout, switchAccount } = useAuthActions();
 
 const orderList = ref([]);
 const loading = ref(false);
@@ -251,6 +255,15 @@ const normalizeAddress = (address) => {
 };
 
 const normalizeLogistics = (payload) => {
+  if (Array.isArray(payload?.timeline)) {
+    return payload.timeline.map((item, index) => ({
+      id: index + 1,
+      text: item.text || item.status || item.content || '物流状态更新',
+      time: item.time || item.timestamp || '',
+      status: index === payload.timeline.length - 1 ? 'current' : '',
+    }));
+  }
+
   if (Array.isArray(payload?.traces)) {
     return payload.traces.map((item, index) => ({
       id: index + 1,
@@ -422,6 +435,16 @@ const goToHome = () => router.push('/home');
 const goToCart = () => router.push('/cart');
 const goToOrders = () => router.push('/orders');
 const goToSupport = () => router.push({ name: 'Support' });
+const handleLogout = async () => {
+  try {
+    await logout();
+  } catch (_) {}
+};
+const handleSwitchAccount = async () => {
+  try {
+    await switchAccount();
+  } catch (_) {}
+};
 
 onMounted(() => {
   fetchOrders();

@@ -11,6 +11,8 @@
         <p class="tip-text">温馨提示：美妆是否购买成功，以最终下单为准，请尽快结算</p>
       </div>
       <div class="header-right">
+        <button class="nav-btn" @click="handleSwitchAccount">切换账号</button>
+        <button class="nav-btn" @click="handleLogout">退出登录</button>
         <button class="nav-btn" @click="goToHome">🏠 首页</button>
         <button class="nav-btn" @click="goToCart">🛒 购物车</button>
         <button class="nav-btn" @click="goToOrders">📋 订单</button>
@@ -105,9 +107,11 @@ import { ref, computed, onMounted } from 'vue';
 import { useRouter } from 'vue-router';
 import { storeToRefs } from 'pinia';
 import { useCartStore } from '@/store/cartStore';
+import { useAuthActions } from '@/composables/useAuthActions';
 import { ElMessage, ElMessageBox } from 'element-plus'; // 如果你使用了 Element Plus
 
 const router = useRouter();
+const { logout, switchAccount } = useAuthActions();
 const cartStore = useCartStore();
 const { cartItems, checkedCount, totalAmount, loading, error } = storeToRefs(cartStore);
 
@@ -208,6 +212,16 @@ const goToHome = () => router.push('/home');
 const goToCart = () => router.push('/cart');
 const goToOrders = () => router.push('/orders');
 const goToSupport = () => router.push({ name: 'Support' });
+const handleLogout = async () => {
+  try {
+    await logout();
+  } catch (_) {}
+};
+const handleSwitchAccount = async () => {
+  try {
+    await switchAccount();
+  } catch (_) {}
+};
 </script>
 
 <style scoped>

@@ -14,6 +14,8 @@
         </div>
       </div>
       <div class="header-right">
+        <button class="nav-btn" @click="handleSwitchAccount">切换账号</button>
+        <button class="nav-btn" @click="handleLogout">退出登录</button>
         <button class="nav-btn" @click="goHome">🏠 首页</button>
         <button class="nav-btn" @click="goToCart">🛒 购物车</button>
         <button class="nav-btn" @click="goToOrders">📋 订单</button>
@@ -119,11 +121,13 @@ import { useRouter, useRoute } from 'vue-router';
 import { ElMessage } from 'element-plus';
 import { useCartStore } from '@/store/cartStore';
 import * as productApi from '@/api/product';
+import { useAuthActions } from '@/composables/useAuthActions';
 import * as addressApi from '@/api/address'; // 需要创建
 
 const router = useRouter();
 const route = useRoute();
 const cartStore = useCartStore();
+const { logout, switchAccount } = useAuthActions();
 
 const productId = computed(() => parseInt(route.params.productId));
 const productData = ref({
@@ -254,6 +258,16 @@ const goHome = () => router.push('/home');
 const goToCart = () => router.push('/cart');
 const goToOrders = () => router.push('/orders');
 const goToSupport = () => router.push({ name: 'Support', query: { productId: productId.value } });
+const handleLogout = async () => {
+  try {
+    await logout();
+  } catch (_) {}
+};
+const handleSwitchAccount = async () => {
+  try {
+    await switchAccount();
+  } catch (_) {}
+};
 
 
 // 服务保障数据

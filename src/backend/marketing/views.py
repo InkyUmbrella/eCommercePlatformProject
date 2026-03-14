@@ -9,13 +9,17 @@ from .models import Banner, HotRecommend
 
 def _serialize_banner(item, request):
     image = request.build_absolute_uri(item.image.url) if item.image else ""
+    link = item.link
+    if item.product_id:
+        link = f"/product-detail/{item.product_id}"
     return {
         "id": item.id,
         "title": item.title,
         "subtitle": item.subtitle,
         "image": image,
         "btn_text": "立即查看",
-        "link": item.link,
+        "link": link,
+        "product_id": item.product_id,
     }
 
 

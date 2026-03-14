@@ -5,10 +5,12 @@ from .models import Banner, HotRecommend
 
 @admin.register(Banner)
 class BannerAdmin(admin.ModelAdmin):
-    list_display = ("id", "title", "sort_order", "is_active", "created_at")
+    list_display = ("id", "title", "product", "sort_order", "is_active", "created_at")
     list_editable = ("sort_order", "is_active")
-    search_fields = ("title", "subtitle", "link")
+    search_fields = ("title", "subtitle", "product__name")
     list_filter = ("is_active",)
+    autocomplete_fields = ("product",)
+    fields = ("title", "subtitle", "image", "product", "sort_order", "is_active")
 
 
 @admin.register(HotRecommend)

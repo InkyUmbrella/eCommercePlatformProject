@@ -1,5 +1,10 @@
 <template>
   <div class="support-page">
+    <div class="page-actions">
+      <el-button @click="goHome">返回首页</el-button>
+      <el-button @click="handleSwitchAccount">切换账号</el-button>
+      <el-button type="danger" plain @click="handleLogout">退出登录</el-button>
+    </div>
     <h1>留言板</h1>
 
     <el-card class="staff-card">
@@ -105,8 +110,12 @@
 import { onMounted, reactive, ref } from 'vue'
 import axios from 'axios'
 import { ElMessage } from 'element-plus'
+import { useRouter } from 'vue-router'
+import { useAuthActions } from '@/composables/useAuthActions'
 
 const SUPPORT_STAFF_TOKEN_KEY = 'support_staff_token'
+const router = useRouter()
+const { logout, switchAccount } = useAuthActions()
 
 const api = axios.create({
   baseURL: import.meta.env.VITE_API_BASE || ''
@@ -250,6 +259,20 @@ const formatTime = (value) => {
   return dt.toLocaleString('zh-CN', { hour12: false })
 }
 
+const goHome = () => router.push('/home')
+
+const handleLogout = async () => {
+  try {
+    await logout()
+  } catch (_) {}
+}
+
+const handleSwitchAccount = async () => {
+  try {
+    await switchAccount()
+  } catch (_) {}
+}
+
 onMounted(() => {
   staffToken.value = localStorage.getItem(SUPPORT_STAFF_TOKEN_KEY) || ''
   isReplyMode.value = Boolean(staffToken.value.trim())
@@ -262,6 +285,12 @@ onMounted(() => {
   max-width: 900px;
   margin: 24px auto;
   padding: 0 16px 24px;
+}
+
+.page-actions {
+  display: flex;
+  gap: 12px;
+  margin-top: 16px;
 }
 
 .staff-card,

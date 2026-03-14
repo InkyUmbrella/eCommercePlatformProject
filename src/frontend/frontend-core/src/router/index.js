@@ -77,4 +77,21 @@ const router = createRouter({
   routes
 })
 
+const publicRouteNames = new Set(['Login', 'Register'])
+
+router.beforeEach((to) => {
+  const token = localStorage.getItem('access_token')
+  const isPublicRoute = publicRouteNames.has(to.name)
+
+  if (!token && !isPublicRoute) {
+    return { name: 'Login', query: { redirect: to.fullPath } }
+  }
+
+  if (token && isPublicRoute) {
+    return { name: 'Home' }
+  }
+
+  return true
+})
+
 export default router

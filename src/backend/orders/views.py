@@ -76,6 +76,7 @@ def _serialize_order_status(order, status_before):
         "aftersale_used": order.aftersale_used,
         "express_company": order.express_company,
         "express_no": order.express_no,
+        "shipping_remark": order.shipping_remark,
         "shipped_at": order.shipped_at.isoformat() if order.shipped_at else None,
     }
 
@@ -101,6 +102,7 @@ def _serialize_order(order, include_items=False):
         "address": _serialize_address(order.address),
         "express_company": order.express_company,
         "express_no": order.express_no,
+        "shipping_remark": order.shipping_remark,
         "shipped_at": order.shipped_at.isoformat() if order.shipped_at else None,
         "items_amount": str(items_amount),
         "shipping_fee": str(shipping_fee),
@@ -298,12 +300,19 @@ def order_ship(request, order_id):
     if order.status != "pending_shipment":
         return fail("only pending_shipment can be shipped", http_status=400)
 
+    express_company = str(request.data.get("express_company", "")).strip()
+    express_no = str(request.data.get("express_no", "")).strip()
+    shipping_remark = str(request.data.get("shipping_remark", "")).strip()
+    if not express_company or not express_no or not shipping_remark:
+        return fail("express_company/express_no/shipping_remark are required", http_status=400)
+
     status_before = order.status
-    order.express_company = str(request.data.get("express_company", "")).strip() or "Default Express"
-    order.express_no = str(request.data.get("express_no", "")).strip() or f"AUTO{order.id:010d}"
+    order.express_company = express_company
+    order.express_no = express_no
+    order.shipping_remark = shipping_remark
     order.shipped_at = timezone.now()
     order.change_status("pending_receipt")
-    order.save(update_fields=["status", "express_company", "express_no", "shipped_at", "updated_at"])
+    order.save(update_fields=["status", "express_company", "express_no", "shipping_remark", "shipped_at", "updated_at"])
     logger.info("order shipped staff=%s order=%s", request.user.id, order.id)
     return ok(_serialize_order_status(order, status_before), "order shipped")
 
@@ -377,16 +386,20 @@ def order_refund_complete(request, order_id):
 @permission_classes([IsAuthenticated])
 def order_logistics(request, order_id):
     order = get_object_or_404(Order, id=order_id, user=request.user)
+    timeline = [{"text": "订单已提交", "time": order.created_at.isoformat()}] + (
+        [{"text": "商家已发货", "time": order.shipped_at.isoformat()}]
+        if order.shipped_at
+        else []
+    )
     return ok(
         {
             "order_id": order.id,
             "company": order.express_company or "待发货",
             "tracking_no": order.express_no or "",
-            "timeline": [{"text": "订单已提交", "time": order.created_at.isoformat()}]
-            + (
-                [{"text": "商家已发货", "time": order.shipped_at.isoformat()}]
-                if order.shipped_at
-                else []
-            ),
+            "express_company": order.express_company or "",
+            "express_no": order.express_no or "",
+            "shipped_at": order.shipped_at.isoformat() if order.shipped_at else None,
+            "timeline": timeline,
+            "traces": timeline,
         }
     )

@@ -1,122 +1,332 @@
 <template>
   <div class="order-container">
     <header class="header">
-      <h2>ÎÒµÄ¶©µ¥</h2>
-      <div class="header-actions">
-        <button @click="goToHome">Ê×Ò³</button>
-        <button @click="goToCart">¹ºÎï³µ</button>
+      <div class="header-left">
+        <img src="@/assets/hello-kitty.jpeg" alt="Beauty" class="logo" />
+        <span class="logo-text">Beauty</span>
       </div>
+      <div class="header-center">
+        <h1 class="page-title">æˆ‘çš„è®¢å•</h1>
+        <p class="tip-text">æŸ¥çœ‹æ‚¨çš„ç¾å¦†è®¢å•ï¼Œè·Ÿè¸ªç‰©æµçŠ¶æ€</p>
+      </div>
+       <div class="header-right">
+        <button class="nav-btn" @click="goToHome">é¦–é¡µ</button>
+        <button class="nav-btn" @click="goToCart">è´­ç‰©è½¦</button>
+        <button class="nav-btn" @click="goToOrders">è®¢å•</button>
+
+        <button class="nav-btn" @click="goToSupport">å®¢æœ</button>
+        <img src="@/assets/hello-kitty.jpg" alt="ç”¨æˆ·å¤´åƒ" class="avatar">
+       </div>
     </header>
 
-    <div class="toolbar">
-      <input v-model="searchKeyword" placeholder="ËÑË÷ÉÌÆ·»ò¶©µ¥ID" />
-      <button @click="handleSearch">ËÑË÷</button>
+    <div class="search-bar">
+      <select class="search-select">
+        <option>å•†å“åç§°</option>
+        <option>è®¢å•å·</option>
+      </select>
+      <input type="text" class="search-input" placeholder="æœç´¢è®¢å•" v-model="searchKeyword" />
+      <button class="search-btn" @click="handleSearch">æœç´¢</button>
     </div>
 
-    <div class="tabs">
-      <button :class="{ active: activeTab === 'all' }" @click="switchTab('all')">È«²¿</button>
-      <button :class="{ active: activeTab === 'pending_payment' }" @click="switchTab('pending_payment')">´ıÖ§¸¶</button>
-      <button :class="{ active: activeTab === 'pending_shipment' }" @click="switchTab('pending_shipment')">´ı·¢»õ</button>
-      <button :class="{ active: activeTab === 'pending_receipt' }" @click="switchTab('pending_receipt')">´ıÊÕ»õ</button>
-      <button :class="{ active: activeTab === 'completed' }" @click="switchTab('completed')">ÒÑÍê³É</button>
-      <button :class="{ active: activeTab === 'refund_processing' }" @click="switchTab('refund_processing')">ÊÛºóÖĞ</button>
-      <button :class="{ active: activeTab === 'cancelled' }" @click="switchTab('cancelled')">ÒÑÈ¡Ïû</button>
+    <div class="order-tabs">
+      <button
+        class="tab-item"
+        :class="{ active: activeTab === 'all' }"
+        @click="switchTab('all')"
+      >
+        å…¨éƒ¨è®¢å•
+      </button>
+      <button
+        class="tab-item"
+        :class="{ active: activeTab === 'pending_payment' }"
+        @click="switchTab('pending_payment')"
+      >
+        å¾…æ”¯ä»˜
+      </button>
+      <button
+        class="tab-item"
+        :class="{ active: activeTab === 'pending_shipment' }"
+        @click="switchTab('pending_shipment')"
+      >
+        å¾…å‘è´§<span class="badge" v-if="pendingShipCount > 0">{{ pendingShipCount }}</span>
+      </button>
+      <button
+        class="tab-item"
+        :class="{ active: activeTab === 'pending_receipt' }"
+        @click="switchTab('pending_receipt')"
+      >
+        å¾…æ”¶è´§
+      </button>
+      <button
+        class="tab-item"
+        :class="{ active: activeTab === 'completed' }"
+        @click="switchTab('completed')"
+      >
+        å·²å®Œæˆ
+      </button>
+      <button
+        class="tab-item"
+        :class="{ active: activeTab === 'refund_processing' }"
+        @click="switchTab('refund_processing')"
+      >
+        å”®åä¸­
+      </button>
+      <button
+        class="tab-item"
+        :class="{ active: activeTab === 'cancelled' }"
+        @click="switchTab('cancelled')"
+      >
+        å·²å–æ¶ˆ
+      </button>
     </div>
 
-    <div v-if="loading" class="info">¼ÓÔØÖĞ...</div>
-    <div v-else-if="error" class="info error">{{ error }}</div>
+    <div v-if="loading" class="loading">åŠ è½½ä¸­...</div>
 
-    <div v-else class="list">
-      <div class="card" v-for="order in orderList" :key="order.id">
-        <div class="row">
-          <strong>¶©µ¥ºÅ£º{{ order.orderNo }}</strong>
-          <span>{{ order.statusText }}</span>
+    <div v-else-if="error" class="error">{{ error }}</div>
+
+    <div v-else class="order-list">
+      <div class="order-item" v-for="order in orderList" :key="order.id">
+        <div class="order-header">
+          <span class="order-id">è®¢å•å·ï¼š{{ order.orderNo }}</span>
+          <span class="order-time">{{ order.createTime }}</span>
+          <span class="order-status" :class="order.status">{{ order.statusText }}</span>
         </div>
-        <div class="row muted">´´½¨Ê±¼ä£º{{ order.createTime }}</div>
-        <div class="row">
-          <span>{{ order.name }}</span>
-          <span>x{{ order.quantity }}</span>
-          <span>£¤{{ order.price }}</span>
+
+        <div class="order-content">
+          <img :src="order.image" :alt="order.name" class="product-img" />
+          <div class="product-info">
+            <h4 class="product-name">{{ order.name }}</h4>
+            <p class="product-desc">åˆ†ç±»ï¼š{{ order.category }} | æ•°é‡ï¼š{{ order.quantity }} ä»¶</p>
+          </div>
+          <div class="order-amount">
+            <p class="amount-label">å®ä»˜æ¬¾</p>
+            <p class="amount-price">ï¿¥{{ order.price }}</p>
+            <p class="payment-method">{{ order.paymentMethod }}</p>
+          </div>
         </div>
-        <div class="row muted" v-if="order.address.name">
-          ÊÕ»õµØÖ·£º{{ order.address.name }} {{ order.address.phone_number }} {{ order.address.address }}
+
+        <div class="order-address" v-if="order.address.name || order.address.detail">
+          <span class="address-icon">åœ°å€</span>
+          <span class="address-text">{{ order.address.name }} {{ order.address.phone }}</span>
+          <span class="address-detail">{{ order.address.region }} {{ order.address.detail }}</span>
         </div>
-        <div class="actions">
-          <button v-if="['pending_payment','pending_shipment','refund_processing'].includes(order.status)" @click="cancelOrder(order.id)">È¡Ïû¶©µ¥</button>
-          <button v-if="order.status === 'pending_receipt'" @click="confirmReceive(order.id)">È·ÈÏÊÕ»õ</button>
-          <button v-if="['pending_receipt','completed'].includes(order.status)" @click="applyRefund(order.id)">ÉêÇëÊÛºó</button>
-          <button v-if="order.status === 'refund_processing'" @click="completeRefund(order.id)">ÊÛºóÍê³É</button>
-          <button v-if="['pending_shipment','pending_receipt'].includes(order.status)" @click="viewLogistics(order.id)">²é¿´ÎïÁ÷</button>
+
+        <div class="order-actions">
+          <button
+            class="action-btn logistics"
+            v-if="['pending_shipment', 'pending_receipt'].includes(order.status)"
+            @click="viewLogistics(order.id)"
+          >
+            æŸ¥çœ‹ç‰©æµ
+          </button>
+
+          <button
+            class="action-btn cancel"
+            v-if="order.status === 'pending_payment'"
+            @click="cancelOrder(order.id)"
+          >
+            å–æ¶ˆè®¢å•
+          </button>
+
+          <button
+            class="action-btn refund"
+            v-if="!['pending_payment', 'cancelled'].includes(order.status) && !order.aftersaleUsed"
+            @click="applyRefund(order.id)"
+          >
+            ç”³è¯·é€€æ¬¾
+          </button>
+
+          <button
+            class="action-btn confirm"
+            v-if="order.status === 'pending_receipt'"
+            @click="confirmReceive(order.id)"
+          >
+            ç¡®è®¤æ”¶è´§
+          </button>
+
+          <button
+            class="action-btn buy-again"
+            v-if="['completed', 'cancelled'].includes(order.status)"
+            @click="buyAgain(order.productId)"
+          >
+            å†æ¬¡è´­ä¹°
+          </button>
         </div>
       </div>
 
       <div class="pagination" v-if="pagination.total > pagination.pageSize">
-        <button :disabled="pagination.page <= 1" @click="handlePageChange(pagination.page - 1)">ÉÏÒ»Ò³</button>
-        <span>{{ pagination.page }} / {{ totalPages }}</span>
-        <button :disabled="pagination.page >= totalPages" @click="handlePageChange(pagination.page + 1)">ÏÂÒ»Ò³</button>
+        <el-pagination
+          background
+          layout="prev, pager, next"
+          :total="pagination.total"
+          :page-size="pagination.pageSize"
+          :current-page="pagination.page"
+          @current-change="handlePageChange"
+        />
+      </div>
+    </div>
+
+    <div class="logistics-dialog-mask" v-if="showLogisticsDialog" @click="closeLogisticsDialog"></div>
+    <div class="logistics-dialog" v-if="showLogisticsDialog">
+      <div class="dialog-header">
+        <h3>ç‰©æµä¿¡æ¯</h3>
+        <button class="close-btn" @click="closeLogisticsDialog">Ã—</button>
+      </div>
+      <div class="dialog-content">
+        <div class="logistics-info">
+          <p class="logistics-company">å¿«é€’å…¬å¸ï¼š{{ logisticsCompany }}</p>
+          <p class="logistics-no">è¿å•å·ç ï¼š{{ logisticsNo }}</p>
+        </div>
+        <div class="logistics-timeline">
+          <div class="timeline-item" v-for="item in logisticsList" :key="item.id">
+            <div class="timeline-dot" :class="{ active: item.status === 'current' }"></div>
+            <div class="timeline-content">
+              <p class="timeline-text">{{ item.text }}</p>
+              <p class="timeline-time">{{ item.time }}</p>
+            </div>
+          </div>
+        </div>
       </div>
     </div>
   </div>
 </template>
 
 <script setup>
-import { computed, onMounted, ref, watch } from 'vue';
+import { ref, computed, watch, onMounted } from 'vue';
 import { useRouter } from 'vue-router';
 import { ElMessage, ElMessageBox } from 'element-plus';
 import * as orderApi from '@/api/order';
 
 const router = useRouter();
+const baseURL = import.meta.env.VITE_API_BASE_URL || 'http://127.0.0.1:8000';
+
 const orderList = ref([]);
 const loading = ref(false);
-const error = ref(null);
+const error = ref('');
+const pagination = ref({
+  page: 1,
+  pageSize: 10,
+  total: 0,
+});
 const activeTab = ref('all');
 const searchKeyword = ref('');
-const pagination = ref({ page: 1, pageSize: 10, total: 0 });
+const showLogisticsDialog = ref(false);
+const logisticsList = ref([]);
+const logisticsCompany = ref('å¾…æ›´æ–°');
+const logisticsNo = ref('å¾…æ›´æ–°');
 
-const totalPages = computed(() => Math.max(1, Math.ceil(pagination.value.total / pagination.value.pageSize)));
+let searchTimer = null;
+
+const normalizeImage = (path) => {
+  if (!path) return '';
+  if (path.startsWith('http')) return path;
+  return `${baseURL}${path}`;
+};
 
 const getStatusText = (status) => {
   const map = {
-    pending_payment: '´ıÖ§¸¶',
-    pending_shipment: '´ı·¢»õ',
-    pending_receipt: '´ıÊÕ»õ',
-    completed: 'ÒÑÍê³É',
-    cancelled: 'ÒÑÈ¡Ïû',
-    refund_processing: 'ÊÛºóÖĞ',
+    pending_payment: 'å¾…æ”¯ä»˜',
+    pending_shipment: 'å¾…å‘è´§',
+    pending_receipt: 'å¾…æ”¶è´§',
+    completed: 'å·²å®Œæˆ',
+    cancelled: 'å·²å–æ¶ˆ',
+    refund_processing: 'å”®åä¸­',
   };
   return map[status] || status;
 };
 
+const normalizeAddress = (address) => {
+  if (!address) {
+    return { name: '', phone: '', region: '', detail: '' };
+  }
+  if (typeof address === 'string') {
+    return { name: '', phone: '', region: '', detail: address };
+  }
+  return {
+    name: address.name || '',
+    phone: address.phone || address.phone_number || '',
+    region: address.region || '',
+    detail: address.detail || address.address || '',
+  };
+};
+
+const normalizeLogistics = (payload) => {
+  if (Array.isArray(payload?.traces)) {
+    return payload.traces.map((item, index) => ({
+      id: index + 1,
+      text: item.text || item.status || item.content || 'ç‰©æµçŠ¶æ€æ›´æ–°',
+      time: item.time || item.timestamp || '',
+      status: index === 0 ? 'current' : '',
+    }));
+  }
+
+  if (payload?.express_company || payload?.express_no) {
+    return [
+      {
+        id: 1,
+        text: `å·²å‘è´§ï¼Œæ‰¿è¿æ–¹ï¼š${payload.express_company || 'å¾…è¡¥å……'}ï¼Œå•å·ï¼š${payload.express_no || 'å¾…è¡¥å……'}`,
+        time: payload.shipped_at || payload.updated_at || '',
+        status: payload.status === 'pending_receipt' ? 'current' : '',
+      },
+    ];
+  }
+
+  return [
+    {
+      id: 1,
+      text: 'è®¢å•æš‚æœªå‘è´§',
+      time: '',
+      status: 'current',
+    },
+  ];
+};
+
 const fetchOrders = async () => {
   loading.value = true;
-  error.value = null;
+  error.value = '';
   try {
     const params = {
       page: pagination.value.page,
       page_size: pagination.value.pageSize,
-      search: searchKeyword.value || undefined,
-      status: activeTab.value === 'all' ? undefined : activeTab.value,
+      search: searchKeyword.value.trim() || undefined,
     };
+
+    if (activeTab.value !== 'all') {
+      params.status = activeTab.value;
+    }
+
     const res = await orderApi.getOrders(params);
-    orderList.value = (res.results || []).map((item) => ({
-      id: item.id,
-      orderNo: item.order_no || `ORD${String(item.id).padStart(8, '0')}`,
-      createTime: item.created_at,
-      status: item.status,
-      statusText: getStatusText(item.status),
-      name: item.items?.[0]?.title || 'ÉÌÆ·',
-      quantity: (item.items || []).reduce((sum, i) => sum + (i.quantity || 0), 0),
-      price: item.pay_amount,
-      address: item.address || { name: '', phone_number: '', address: '' },
-    }));
+    orderList.value = res.results.map((item) => {
+      const firstItem = item.items?.[0] || {};
+      return {
+        id: item.id,
+        orderNo: item.order_no || item.id,
+        createTime: item.created_at || '',
+        status: item.status,
+        aftersaleUsed: Boolean(item.aftersale_used),
+        statusText: getStatusText(item.status),
+        name: firstItem.product_name || firstItem.title || 'å•†å“',
+        category: firstItem.category_name || '',
+        quantity: item.items?.reduce((sum, current) => sum + (current.quantity || 0), 0) || 0,
+        price: item.pay_amount,
+        paymentMethod: item.payment_method || 'åœ¨çº¿æ”¯ä»˜',
+        image: normalizeImage(firstItem.image || firstItem.cover_image),
+        productId: firstItem.product_id,
+        address: normalizeAddress(item.address),
+      };
+    });
     pagination.value.total = res.count || 0;
   } catch (err) {
-    error.value = err.message;
-    ElMessage.error(`¼ÓÔØ¶©µ¥Ê§°Ü: ${err.message}`);
+    error.value = err?.message || 'åŠ è½½è®¢å•å¤±è´¥';
+    ElMessage.error(error.value);
   } finally {
     loading.value = false;
   }
 };
+
+const pendingShipCount = computed(() =>
+  orderList.value.filter((item) => item.status === 'pending_shipment').length,
+);
 
 const switchTab = (tab) => {
   activeTab.value = tab;
@@ -125,8 +335,13 @@ const switchTab = (tab) => {
 };
 
 const handleSearch = () => {
-  pagination.value.page = 1;
-  fetchOrders();
+  if (searchTimer) {
+    clearTimeout(searchTimer);
+  }
+  searchTimer = window.setTimeout(() => {
+    pagination.value.page = 1;
+    fetchOrders();
+  }, 400);
 };
 
 const handlePageChange = (page) => {
@@ -134,78 +349,522 @@ const handlePageChange = (page) => {
   fetchOrders();
 };
 
-const cancelOrder = async (orderId) => {
-  try {
-    await orderApi.cancelOrder(orderId);
-    ElMessage.success('¶©µ¥ÒÑÈ¡Ïû');
-    fetchOrders();
-  } catch (err) {
-    ElMessage.error(`È¡ÏûÊ§°Ü: ${err.message}`);
-  }
-};
-
-const confirmReceive = async (orderId) => {
-  try {
-    await orderApi.receiveOrder(orderId);
-    ElMessage.success('ÒÑÈ·ÈÏÊÕ»õ');
-    fetchOrders();
-  } catch (err) {
-    ElMessage.error(`È·ÈÏÊÕ»õÊ§°Ü: ${err.message}`);
-  }
-};
-
-const applyRefund = async (orderId) => {
-  try {
-    await orderApi.refundOrder(orderId);
-    ElMessage.success('ÒÑ½øÈëÊÛºóÖĞ');
-    fetchOrders();
-  } catch (err) {
-    ElMessage.error(`ÉêÇëÊÛºóÊ§°Ü: ${err.message}`);
-  }
-};
-
-const completeRefund = async (orderId) => {
-  try {
-    await orderApi.completeRefund(orderId);
-    ElMessage.success('ÊÛºóÒÑÍê³É');
-    fetchOrders();
-  } catch (err) {
-    ElMessage.error(`ÊÛºóÍê³ÉÊ§°Ü: ${err.message}`);
-  }
-};
-
 const viewLogistics = async (orderId) => {
   try {
-    const data = await orderApi.getLogistics(orderId);
-    const lines = (data.timeline || []).map((i) => `${i.time} ${i.text}`).join('\n');
-    ElMessageBox.alert(`${data.company} ${data.tracking_no}\n\n${lines}`, 'ÎïÁ÷ĞÅÏ¢');
+    const res = await orderApi.getLogistics(orderId);
+    logisticsCompany.value = res?.express_company || 'å¾…æ›´æ–°';
+    logisticsNo.value = res?.express_no || 'å¾…æ›´æ–°';
+    logisticsList.value = normalizeLogistics(res);
+    showLogisticsDialog.value = true;
   } catch (err) {
-    ElMessage.error(`»ñÈ¡ÎïÁ÷Ê§°Ü: ${err.message}`);
+    ElMessage.error(err?.message || 'è·å–ç‰©æµä¿¡æ¯å¤±è´¥');
   }
+};
+
+const closeLogisticsDialog = () => {
+  showLogisticsDialog.value = false;
+  logisticsList.value = [];
+  logisticsCompany.value = 'å¾…æ›´æ–°';
+  logisticsNo.value = 'å¾…æ›´æ–°';
+};
+
+const applyRefund = (orderId) => {
+  ElMessageBox.confirm('ç¡®å®šè¦ç”³è¯·é€€æ¬¾å—ï¼Ÿ', 'æç¤º', {
+    confirmButtonText: 'ç¡®å®š',
+    cancelButtonText: 'å–æ¶ˆ',
+    type: 'warning',
+  })
+    .then(async () => {
+      await orderApi.refundOrder(orderId);
+      ElMessage.success('é€€æ¬¾ç”³è¯·å·²æäº¤');
+      fetchOrders();
+    })
+    .catch(() => {});
+};
+
+const confirmReceive = (orderId) => {
+  ElMessageBox.confirm('ç¡®è®¤å·²ç»æ”¶åˆ°å•†å“å—ï¼Ÿ', 'æç¤º', {
+    confirmButtonText: 'ç¡®å®š',
+    cancelButtonText: 'å–æ¶ˆ',
+    type: 'info',
+  })
+    .then(async () => {
+      await orderApi.receiveOrder(orderId);
+      ElMessage.success('ç¡®è®¤æ”¶è´§æˆåŠŸ');
+      fetchOrders();
+    })
+    .catch(() => {});
+};
+
+const cancelOrder = (orderId) => {
+  ElMessageBox.confirm('ç¡®å®šè¦å–æ¶ˆè¯¥è®¢å•å—ï¼Ÿ', 'æç¤º', {
+    confirmButtonText: 'ç¡®å®š',
+    cancelButtonText: 'å–æ¶ˆ',
+    type: 'warning',
+  })
+    .then(async () => {
+      await orderApi.cancelOrder(orderId);
+      ElMessage.success('è®¢å•å·²å–æ¶ˆ');
+      fetchOrders();
+    })
+    .catch(() => {});
+};
+
+const buyAgain = (productId) => {
+  if (!productId) {
+    ElMessage.warning('è¯¥è®¢å•å•†å“ä¿¡æ¯ç¼ºå¤±');
+    return;
+  }
+  router.push({ name: 'ProductDetail', params: { productId } });
 };
 
 const goToHome = () => router.push('/home');
 const goToCart = () => router.push('/cart');
+const goToOrders = () => router.push('/orders');
+const goToSupport = () => router.push({ name: 'Support' });
 
-watch(searchKeyword, () => {
-  // keep manual search behavior; no auto-fetch for every key stroke
+onMounted(() => {
+  fetchOrders();
 });
 
-onMounted(fetchOrders);
+watch(searchKeyword, handleSearch);
 </script>
 
 <style scoped>
-.order-container { padding: 16px; }
-.header { display: flex; justify-content: space-between; align-items: center; }
-.header-actions button { margin-left: 8px; }
-.toolbar { margin: 12px 0; display: flex; gap: 8px; }
-.tabs { display: flex; gap: 8px; flex-wrap: wrap; margin-bottom: 12px; }
-.tabs button.active { background: #ff69b4; color: #fff; border-color: #ff69b4; }
-.card { border: 1px solid #eee; border-radius: 8px; padding: 12px; margin-bottom: 10px; }
-.row { display: flex; gap: 12px; justify-content: space-between; margin: 6px 0; }
-.row.muted { color: #666; font-size: 12px; }
-.actions { display: flex; gap: 8px; flex-wrap: wrap; margin-top: 8px; }
-.info { padding: 16px; }
-.info.error { color: #c00; }
-.pagination { display: flex; gap: 12px; justify-content: center; align-items: center; margin-top: 12px; }
+/* å…¨å±€å®¹å™¨ */
+.order-container {
+  width: 100vw;
+  min-height: 100vh;
+  background-color: #fff9f7;
+  font-family: 'Microsoft YaHei', sans-serif;
+  margin: 0;
+  padding: 0;
+  box-sizing: border-box;
+}
+
+/* é¡¶éƒ¨å¯¼èˆªæ ï¼šå’Œå…¶ä»–é¡µé¢ä¿æŒä¸€è‡´ */
+.header {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  padding: 12px 30px;
+  background-color: #fff;
+  box-shadow: 0 2px 8px rgba(255, 192, 203, 0.2);
+  box-sizing: border-box;
+  width: 100%;
+}
+.header-left {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  flex-shrink: 0;
+}
+.logo {
+  width: 42px;
+  height: 42px;
+  border-radius: 50%;
+  object-fit: cover;
+}
+.logo-text {
+  font-size: 18px;
+  font-weight: 700;
+  color: #8b5a42;
+  line-height: 1.2;
+}
+.header-center {
+  flex: 1;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+}
+.page-title {
+  font-size: 22px;
+  color: #333;
+  font-weight: 600;
+  margin: 0 0 5px 0;
+}
+.tip-text {
+  font-size: 12px;
+  color: #999;
+  margin: 0;
+}
+.header-right {
+  display: flex;
+  align-items: center;
+  gap: 15px;
+  flex-shrink: 0;
+}
+.nav-btn {
+  padding: 6px 10px;
+  background: none;
+  border: none;
+  color: #8b5a42;
+  cursor: pointer;
+  font-size: 12px;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  border-radius: 8px;
+  transition: all 0.3s;
+}
+.nav-btn.active {
+  color: #ff69b4;
+  background-color: #fff0f5;
+}
+.nav-btn:hover {
+  color: #ff69b4;
+  background-color: #fff0f5;
+}
+.avatar {
+  width: 32px;
+  height: 32px;
+  border-radius: 50%;
+  object-fit: cover;
+}
+
+/* æœç´¢æ  */
+.search-bar {
+  display: flex;
+  align-items: center;
+  justify-content: flex-end;
+  padding: 10px 30px;
+  gap: 0;
+}
+.search-select {
+  padding: 8px 12px;
+  border: 1px solid #ffc0cb;
+  border-radius: 6px 0 0 6px;
+  font-size: 12px;
+  color: #666;
+}
+.search-input {
+  padding: 8px 12px;
+  border: 1px solid #ffc0cb;
+  border-left: none;
+  border-radius: 0;
+  font-size: 12px;
+  width: 200px;
+}
+.search-btn {
+  background-color: #ff69b4;
+  border: none;
+  border-radius: 0 6px 6px 0;
+  color: #fff;
+  padding: 8px 12px;
+  cursor: pointer;
+}
+
+/* è®¢å•çŠ¶æ€ç­›é€‰æ ‡ç­¾ */
+.order-tabs {
+  display: flex;
+  align-items: center;
+  background-color: #fff;
+  border-radius: 12px;
+  margin: 10px 30px;
+  overflow: hidden;
+  box-shadow: 0 2px 8px rgba(255, 192, 203, 0.1);
+}
+.tab-item {
+  flex: 1;
+  padding: 12px 0;
+  background: none;
+  border: none;
+  font-size: 14px;
+  color: #666;
+  cursor: pointer;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 5px;
+  transition: all 0.3s;
+}
+.tab-item.active {
+  background-color: #ff69b4;
+  color: #fff;
+  font-weight: 600;
+}
+.badge {
+  background-color: #ff4081;
+  color: #fff;
+  font-size: 10px;
+  padding: 1px 5px;
+  border-radius: 50%;
+  margin-left: 2px;
+}
+
+/* è®¢å•åˆ—è¡¨ */
+.order-list {
+  padding: 0 30px;
+}
+.order-item {
+  background-color: #fff;
+  border-radius: 12px;
+  margin-bottom: 15px;
+  overflow: hidden;
+  box-shadow: 0 2px 8px rgba(255, 192, 203, 0.1);
+}
+/* è®¢å•å¤´éƒ¨ */
+.order-header {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  padding: 10px 15px;
+  background-color: #fff9f7;
+  font-size: 12px;
+  color: #666;
+}
+.order-id {
+  font-weight: 600;
+}
+.order-status {
+  padding: 2px 8px;
+  border-radius: 4px;
+  font-size: 11px;
+}
+.order-status.pending_receive {
+  background-color: #e3f2fd;
+  color: #1976d2;
+}
+.order-status.pending_ship {
+  background-color: #fff3e0;
+  color: #f57c00;
+}
+.order-status.completed {
+  background-color: #e8f5e9;
+  color: #2e7d32;
+}
+/* è®¢å•å†…å®¹ */
+.order-content {
+  display: flex;
+  align-items: center;
+  padding: 15px;
+  gap: 15px;
+}
+.product-img {
+  width: 60px;
+  height: 60px;
+  object-fit: cover;
+  border-radius: 8px;
+}
+.product-info {
+  flex: 1;
+}
+.product-name {
+  font-size: 14px;
+  color: #333;
+  margin: 0 0 5px 0;
+}
+.product-desc {
+  font-size: 12px;
+  color: #999;
+  margin: 0;
+}
+.order-amount {
+  text-align: right;
+}
+.amount-label {
+  font-size: 11px;
+  color: #999;
+  margin: 0;
+}
+.amount-price {
+  font-size: 16px;
+  color: #ff69b4;
+  font-weight: 600;
+  margin: 2px 0;
+}
+.payment-method {
+  font-size: 11px;
+  color: #999;
+  margin: 0;
+}
+/* æ”¶è´§åœ°å€ */
+.order-address {
+  display: flex;
+  align-items: center;
+  padding: 10px 15px;
+  background-color: #fff9f7;
+  font-size: 12px;
+  color: #666;
+  gap: 5px;
+}
+.address-icon {
+  color: #ff69b4;
+}
+.address-text {
+  flex: 1;
+}
+.address-detail {
+  flex: 2;
+}
+/* è®¢å•æ“ä½œæ  */
+.order-actions {
+  display: flex;
+  align-items: center;
+  justify-content: flex-end;
+  padding: 10px 15px;
+  gap: 10px;
+  border-top: 1px solid #ffe6ef;
+}
+.action-btn {
+  padding: 6px 12px;
+  border-radius: 6px;
+  font-size: 12px;
+  cursor: pointer;
+  transition: all 0.3s;
+}
+.action-btn.logistics {
+  background-color: #e3f2fd;
+  border: 1px solid #bbdefb;
+  color: #1976d2;
+}
+.action-btn.refund {
+  background-color: #fff3e0;
+  border: 1px solid #ffcc80;
+  color: #f57c00;
+}
+.action-btn.confirm {
+  background-color: #ff69b4;
+  border: none;
+  color: #fff;
+}
+.action-btn.buy-again {
+  background-color: #fff0f5;
+  border: 1px solid #ffc0cb;
+  color: #ff69b4;
+}
+.action-btn:hover {
+  opacity: 0.9;
+}
+
+/* ç‰©æµå¼¹çª— */
+.logistics-dialog-mask {
+  position: fixed;
+  top: 0;
+  left: 0;
+  width: 100vw;
+  height: 100vh;
+  background-color: rgba(0, 0, 0, 0.5);
+  z-index: 1000;
+}
+.logistics-dialog {
+  position: fixed;
+  top: 50%;
+  left: 50%;
+  transform: translate(-50%, -50%);
+  width: 90%;
+  max-width: 400px;
+  background-color: #fff;
+  border-radius: 12px;
+  box-shadow: 0 4px 20px rgba(255, 105, 180, 0.3);
+  z-index: 1001;
+  padding: 15px;
+}
+.dialog-header {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  padding-bottom: 10px;
+  border-bottom: 1px solid #ffe6ef;
+  margin-bottom: 15px;
+}
+.dialog-header h3 {
+  font-size: 18px;
+  color: #333;
+  margin: 0;
+}
+.close-btn {
+  background: none;
+  border: none;
+  font-size: 20px;
+  color: #999;
+  cursor: pointer;
+}
+.logistics-info {
+  margin-bottom: 15px;
+  padding-bottom: 10px;
+  border-bottom: 1px solid #ffe6ef;
+}
+.logistics-company, .logistics-no {
+  font-size: 14px;
+  color: #333;
+  margin: 5px 0;
+}
+/* ç‰©æµæ—¶é—´çº¿ */
+.logistics-timeline {
+  position: relative;
+  padding-left: 20px;
+}
+.logistics-timeline::before {
+  content: '';
+  position: absolute;
+  left: 8px;
+  top: 0;
+  bottom: 0;
+  width: 2px;
+  background-color: #ffc0cb;
+}
+.timeline-item {
+  position: relative;
+  margin-bottom: 15px;
+}
+.timeline-dot {
+  position: absolute;
+  left: -16px;
+  top: 5px;
+  width: 10px;
+  height: 10px;
+  border-radius: 50%;
+  background-color: #ffc0cb;
+}
+.timeline-dot.active {
+  background-color: #ff69b4;
+  transform: scale(1.2);
+}
+.timeline-content {
+  margin-left: 10px;
+}
+.timeline-text {
+  font-size: 13px;
+  color: #333;
+  margin: 0 0 3px 0;
+}
+.timeline-time {
+  font-size: 11px;
+  color: #999;
+  margin: 0;
+}
+
+/* å“åº”å¼é€‚é… */
+@media (max-width: 768px) {
+  .header-center {
+    display: none;
+  }
+  .order-tabs {
+    margin: 10px 15px;
+  }
+  .tab-item {
+    font-size: 12px;
+    padding: 10px 0;
+  }
+  .order-list {
+    padding: 0 15px;
+  }
+  .order-content {
+    padding: 10px;
+  }
+  .product-img {
+    width: 50px;
+    height: 50px;
+  }
+  .order-address {
+    flex-direction: column;
+    align-items: flex-start;
+    gap: 2px;
+  }
+  .order-actions {
+    justify-content: center;
+    flex-wrap: wrap;
+  }
+}
 </style>

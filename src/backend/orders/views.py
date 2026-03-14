@@ -1,14 +1,15 @@
-﻿import logging
+import logging
 from decimal import Decimal
 
 from django.db import transaction
-from django.shortcuts import get_object_or_404
 from django.db.models import Q
+from django.shortcuts import get_object_or_404
+from django.utils import timezone
 from rest_framework.decorators import api_view, permission_classes
 from rest_framework.permissions import IsAuthenticated
 
 from cart.models import CartItem
-from common.response import ok, fail
+from common.response import fail, ok
 from orders.models import Order, OrderItem
 from users.models import Address
 
@@ -72,6 +73,10 @@ def _serialize_order_status(order, status_before):
         "order_id": order.id,
         "status_before": status_before,
         "status_after": order.status,
+        "aftersale_used": order.aftersale_used,
+        "express_company": order.express_company,
+        "express_no": order.express_no,
+        "shipped_at": order.shipped_at.isoformat() if order.shipped_at else None,
     }
 
 
@@ -92,7 +97,11 @@ def _serialize_order(order, include_items=False):
         "order_id": order.id,
         "order_no": f"ORD{order.id:08d}",
         "status": order.status,
+        "aftersale_used": order.aftersale_used,
         "address": _serialize_address(order.address),
+        "express_company": order.express_company,
+        "express_no": order.express_no,
+        "shipped_at": order.shipped_at.isoformat() if order.shipped_at else None,
         "items_amount": str(items_amount),
         "shipping_fee": str(shipping_fee),
         "pay_amount": str(pay_amount),
@@ -147,7 +156,7 @@ def orders_root(request):
             }
         )
 
-    return order_create(request)
+    return _create_order(request)
 
 
 @api_view(["GET"])
@@ -197,9 +206,7 @@ def order_confirm(request):
     )
 
 
-@api_view(["POST"])
-@permission_classes([IsAuthenticated])
-def order_create(request):
+def _create_order(request):
     user = request.user
     address_id = request.data.get("address_id")
     if not address_id:
@@ -264,6 +271,12 @@ def order_create(request):
 
 @api_view(["POST"])
 @permission_classes([IsAuthenticated])
+def order_create(request):
+    return _create_order(request)
+
+
+@api_view(["POST"])
+@permission_classes([IsAuthenticated])
 def order_pay(request, order_id):
     order = get_object_or_404(Order, id=order_id, user=request.user)
     if order.status != "pending_payment":
@@ -273,6 +286,26 @@ def order_pay(request, order_id):
     order.change_status("pending_shipment")
     logger.info("order paid user=%s order=%s", request.user.id, order.id)
     return ok(_serialize_order_status(order, status_before), "order paid")
+
+
+@api_view(["POST"])
+@permission_classes([IsAuthenticated])
+def order_ship(request, order_id):
+    if not request.user.is_staff:
+        return fail("forbidden", http_status=403)
+
+    order = get_object_or_404(Order, id=order_id)
+    if order.status != "pending_shipment":
+        return fail("only pending_shipment can be shipped", http_status=400)
+
+    status_before = order.status
+    order.express_company = str(request.data.get("express_company", "")).strip() or "Default Express"
+    order.express_no = str(request.data.get("express_no", "")).strip() or f"AUTO{order.id:010d}"
+    order.shipped_at = timezone.now()
+    order.change_status("pending_receipt")
+    order.save(update_fields=["status", "express_company", "express_no", "shipped_at", "updated_at"])
+    logger.info("order shipped staff=%s order=%s", request.user.id, order.id)
+    return ok(_serialize_order_status(order, status_before), "order shipped")
 
 
 @api_view(["POST"])
@@ -316,8 +349,12 @@ def order_refund(request, order_id):
     }
     if order.status not in refundable_statuses:
         return fail("current status cannot start refund", http_status=400)
+    if order.aftersale_used:
+        return fail("refund already used", http_status=400)
 
     status_before = order.status
+    order.aftersale_used = True
+    order.save(update_fields=["aftersale_used"])
     order.change_status("refund_processing")
     logger.info("order refund started user=%s order=%s", request.user.id, order.id)
     return ok(_serialize_order_status(order, status_before), "refund processing started")
@@ -343,11 +380,13 @@ def order_logistics(request, order_id):
     return ok(
         {
             "order_id": order.id,
-            "company": "顺丰速运",
-            "tracking_no": f"SF{order.id:010d}",
-            "timeline": [
-                {"text": "订单已提交", "time": order.created_at.isoformat()},
-                {"text": "商家已发货", "time": order.updated_at.isoformat()},
-            ],
+            "company": order.express_company or "待发货",
+            "tracking_no": order.express_no or "",
+            "timeline": [{"text": "订单已提交", "time": order.created_at.isoformat()}]
+            + (
+                [{"text": "商家已发货", "time": order.shipped_at.isoformat()}]
+                if order.shipped_at
+                else []
+            ),
         }
     )

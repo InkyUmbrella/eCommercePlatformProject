@@ -38,8 +38,8 @@
         <button class="nav-btn" @click="goToHome">🏠 首页</button>
         <button class="nav-btn" @click="goToCart">🛒 购物车</button>
         <button class="nav-btn" @click="goToOrders">📋 订单</button>
-        <button class="nav-btn" @click="goToProfile">👤 我的</button>
         
+        <button class="nav-btn" @click="goToSupport">💬 客服</button>
         <img src="@/assets/hello-kitty.jpg" alt="用户头像" class="avatar" />
 
       </div>
@@ -194,7 +194,7 @@ const handlePageChange = (page) => {
 const goToHome = () => router.push('/home');
 const goToCart = () => router.push('/cart');
 const goToOrders = () => router.push('/orders');
-const goToProfile = () => router.push('/profile');
+const goToSupport = () => router.push({ name: 'Support' });
 const goToDetail = (id) => router.push({ name: 'ProductDetail', params: { productId: id } });
 
 // 收藏

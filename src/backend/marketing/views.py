@@ -2,24 +2,41 @@ from rest_framework.decorators import api_view, permission_classes
 from rest_framework.permissions import AllowAny
 
 from common.response import ok
-from products.models import Product
+from products.views import _serialize_product
+
+from .models import Banner, HotRecommend
+
+
+def _serialize_banner(item, request):
+    image = request.build_absolute_uri(item.image.url) if item.image else ""
+    return {
+        "id": item.id,
+        "title": item.title,
+        "subtitle": item.subtitle,
+        "image": image,
+        "btn_text": "立即查看",
+        "link": item.link,
+    }
 
 
 @api_view(["GET"])
 @permission_classes([AllowAny])
 def banners(request):
-    products = Product.objects.filter(is_active=True).order_by("-created_at")[:3]
+    queryset = Banner.objects.filter(is_active=True).order_by("sort_order", "-id")
+    return ok([_serialize_banner(item, request) for item in queryset])
+
+
+@api_view(["GET"])
+@permission_classes([AllowAny])
+def hot_recommends(request):
+    queryset = (
+        HotRecommend.objects.filter(is_active=True, product__is_active=True)
+        .select_related("product__category")
+        .order_by("sort_order", "-id")
+    )
     payload = []
-    for idx, product in enumerate(products, start=1):
-        image = request.build_absolute_uri(product.cover_image.url) if product.cover_image else ""
-        payload.append(
-            {
-                "id": idx,
-                "title": product.name,
-                "subtitle": (product.description or "")[:32],
-                "image": image,
-                "btn_text": "立即查看",
-                "link": f"/product-detail/{product.id}",
-            }
-        )
+    for item in queryset:
+        product_data = _serialize_product(item.product, request)
+        product_data["recommend_title"] = item.title or item.product.name
+        payload.append(product_data)
     return ok(payload)

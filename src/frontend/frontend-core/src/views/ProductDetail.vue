@@ -18,7 +18,7 @@
         <button class="nav-btn" @click="goToCart">🛒 购物车</button>
         <button class="nav-btn" @click="goToOrders">📋 订单</button>
 
-        <button class="nav-btn" @click="goToProfile">👤 我的</button>
+        <button class="nav-btn" @click="goToSupport">💬 客服</button>
         <img src="@/assets/hello-kitty.jpg" alt="用户头像" class="avatar">
       </div>
     </header>
@@ -54,7 +54,7 @@
             <span>收货地址</span>
           </div>
           <div class="address-info">
-            <span class="address-text">北京市 市辖区 东城区 (某小区)</span>
+            <span class="address-text">{{ addressDisplayText }}</span>
             <button class="modify-btn"@click="goToAddressEdit">修改</button>
           </div>
         </div>
@@ -114,7 +114,7 @@
 </template>
 
 <script setup>
-import { ref, computed, onMounted } from 'vue';
+import { ref, computed, onMounted, watch } from 'vue';
 import { useRouter, useRoute } from 'vue-router';
 import { ElMessage } from 'element-plus';
 import { useCartStore } from '@/store/cartStore';
@@ -126,12 +126,30 @@ const route = useRoute();
 const cartStore = useCartStore();
 
 const productId = computed(() => parseInt(route.params.productId));
-const productData = ref(null);
+const productData = ref({
+  id: null,
+  name: '',
+  description: '',
+  price: 0,
+  stock: 0,
+  image: '',
+});
 const loading = ref(true);
 const error = ref(null);
 const quantity = ref(1);
 const showSuccessTip = ref(false);
+const totalPrice = computed(() => {
+  const price = Number(productData.value?.price || 0);
+  return (price * quantity.value).toFixed(2);
+});
 const defaultAddress = ref(null); // 默认地址
+const addressDisplayText = computed(() => {
+  if (!defaultAddress.value) {
+    return '请先添加收货地址';
+  }
+  const { name, phone_number, address } = defaultAddress.value;
+  return [name, phone_number, address].filter(Boolean).join(' ');
+});
 
 // 获取商品详情
 const fetchProduct = async () => {
@@ -176,6 +194,15 @@ onMounted(() => {
   fetchDefaultAddress();
 });
 
+watch(
+  () => route.query._t,
+  (newVal, oldVal) => {
+    if (newVal && newVal !== oldVal) {
+      fetchDefaultAddress();
+    }
+  },
+);
+
 // 数量增减
 const decreaseQuantity = () => {
   if (quantity.value > 1) quantity.value--;
@@ -213,14 +240,19 @@ const buyNow = () => {
 
 // 地址编辑
 const goToAddressEdit = () => {
-  router.push({ name: 'AddressEdit', query: { addressId: defaultAddress.value?.id } });
+  router.push({
+    name: 'AddressEdit',
+    query: {
+      addressId: defaultAddress.value?.id,
+      redirect: `/product-detail/${productId.value}`,
+    },
+  });
 };
 
 // 其他导航
 const goHome = () => router.push('/home');
 const goToCart = () => router.push('/cart');
 const goToOrders = () => router.push('/orders');
-const goToProfile = () => router.push('/profile');
 const goToSupport = () => router.push({ name: 'Support', query: { productId: productId.value } });
 
 

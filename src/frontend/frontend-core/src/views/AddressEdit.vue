@@ -1,40 +1,35 @@
 <template>
   <div class="address-edit-container">
-    <!-- 顶部导航栏 -->
     <header class="header">
-      <button class="back-btn" @click="goBack">← 返回</button>
-      <h1 class="page-title">修改收货地址</h1>
+      <button class="back-btn" @click="goBack">返回</button>
+      <h1 class="page-title">{{ addressId ? '修改收货地址' : '新增收货地址' }}</h1>
       <button class="save-btn" @click="saveAddress">保存</button>
     </header>
 
-    <!-- 地址编辑表单 -->
-    <form class="address-form">
-      <!-- 收货人 -->
+    <form class="address-form" @submit.prevent="saveAddress">
       <div class="form-item">
         <label class="form-label">收货人</label>
-        <input 
-          type="text" 
-          v-model="address.name" 
-          class="form-input" 
+        <input
+          v-model="address.name"
+          type="text"
+          class="form-input"
           placeholder="请输入收货人姓名"
           required
         />
       </div>
 
-      <!-- 手机号 -->
       <div class="form-item">
         <label class="form-label">手机号</label>
-        <input 
-          type="tel" 
-          v-model="address.phone" 
-          class="form-input" 
+        <input
+          v-model="address.phone"
+          type="tel"
+          class="form-input"
           placeholder="请输入手机号"
           maxlength="11"
           required
         />
       </div>
 
-      <!-- 省市区三级联动 -->
       <div class="form-item">
         <label class="form-label">所在地区</label>
         <div class="region-select">
@@ -59,36 +54,33 @@
         </div>
       </div>
 
-      <!-- 详细地址 -->
       <div class="form-item">
         <label class="form-label">详细地址</label>
-        <input 
-          type="text" 
-          v-model="address.detail" 
-          class="form-input" 
+        <input
+          v-model="address.detail"
+          type="text"
+          class="form-input"
           placeholder="请输入街道、小区、门牌号等"
           required
         />
       </div>
 
-      <!-- 邮政编码（可选） -->
       <div class="form-item">
         <label class="form-label">邮政编码</label>
-        <input 
-          type="text" 
-          v-model="address.zipCode" 
-          class="form-input" 
+        <input
+          v-model="address.zipCode"
+          type="text"
+          class="form-input"
           placeholder="选填"
           maxlength="6"
         />
       </div>
 
-      <!-- 默认地址 -->
       <div class="form-item checkbox-item">
         <label class="checkbox-label">
-          <input 
-            type="checkbox" 
-            v-model="address.isDefault" 
+          <input
+            v-model="address.isDefault"
+            type="checkbox"
             class="checkbox-input"
           />
           <span class="checkbox-text">设为默认收货地址</span>
@@ -96,10 +88,9 @@
       </div>
     </form>
 
-    <!-- 底部操作栏 -->
     <div class="bottom-actions">
       <button class="cancel-btn" @click="goBack">取消</button>
-      <button class="confirm-btn" @click="saveAddress">确认修改</button>
+      <button class="confirm-btn" @click="saveAddress">确认保存</button>
     </div>
   </div>
 </template>
@@ -107,140 +98,221 @@
 <script setup>
 import { ref, reactive, onMounted } from 'vue';
 import { useRouter, useRoute } from 'vue-router';
-import { ElMessage, ElMessageBox } from 'element-plus'; // 使用 Element Plus 提示
+import { ElMessage } from 'element-plus';
 import * as addressApi from '@/api/address';
+import regionMap from '@/data/regions.json';
+
+const ROOT_REGION_CODE = '86';
+const MUNICIPALITY_CODES = new Set(['110000', '120000', '310000', '500000']);
+const DIRECT_COUNTY_NAMES = new Set(['市辖区', '县']);
 
 const router = useRouter();
 const route = useRoute();
 
-// 加载状态
+const buildOptions = (map = {}, transformName) =>
+  Object.entries(map).map(([code, name]) => ({
+    code,
+    name: transformName ? transformName(code, name) : name,
+  }));
+
 const loading = ref(false);
-
-// 省市区模拟数据（保持不变，如果后端提供省市区接口，也可以改为从后端获取）
-const provinceList = ref([/* ... 保持不变 ... */]);
+const provinceList = ref(buildOptions(regionMap[ROOT_REGION_CODE]));
 const cityList = ref([]);
-
 const areaList = ref([]);
-const regionData = { /* ... 保持不变 ... */ };
 
-// 路由参数：addressId 存在时为编辑模式，否则为新增
 const addressId = route.query.addressId;
 
-// 地址表单数据（与后端字段对应）
 const address = reactive({
   id: null,
-  name: '',          // 收货人
-  phone: '',          // 手机号（前端字段）
+  name: '',
+  phone: '',
   province: '',
   city: '',
   area: '',
   detail: '',
   zipCode: '',
-  isDefault: false    // 是否默认
+  isDefault: false,
 });
 
-// 初始化
-onMounted(async () => {
-  if (addressId) {
-    // 编辑模式：获取地址详情
-    loading.value = true;
-    try {
-      // 假设后端有详情接口，返回数据格式如：{ id, name, phone_number, address, is_default, ... }
-      const res = await addressApi.getAddressDetail(addressId);
-      // 填充表单，需要将后端字段映射到前端
-      address.id = res.id;
-      address.name = res.name;
-      address.phone = res.phone_number;
-      address.isDefault = res.is_default;
-      
-      // 地址字符串解析（假设后端存储的 address 是完整地址，如 "北京市东城区某某小区1号楼2单元301"）
-      // 这里简单处理：无法反向解析出省市区，所以省市区可能无法回显，需要后端分别返回省市区字段。
-      // 如果后端只返回完整字符串，那么编辑时省市区下拉框无法自动选中，需要用户重新选择。
-      // 为了更好体验，建议后端增加 province_code, city_code, area_code 字段。
-      // 此处先模拟解析，实际开发需要与后端协调。
-      // 我们暂时将完整地址赋值给 detail，省市区留空让用户重新选择。
-      address.detail = res.address || '';
-      
-      // 初始化省市区下拉框（根据解析出的编码，此处无编码，所以无法自动选中）
-      // 可以清空已选值
-      address.province = '';
-      address.city = '';
-      address.area = '';
-    } catch (err) {
-      ElMessage.error('获取地址详情失败：' + err.message);
-    } finally {
-      loading.value = false;
+const getProvinceName = (provinceCode) => regionMap[ROOT_REGION_CODE]?.[provinceCode] || '';
+const getCityMap = (provinceCode) => regionMap[provinceCode] || {};
+const getCityName = (provinceCode, cityCode) => getCityMap(provinceCode)?.[cityCode] || '';
+const getAreaMap = (cityCode) => regionMap[cityCode] || {};
+const getAreaName = (cityCode, areaCode) => getAreaMap(cityCode)?.[areaCode] || '';
+
+const getCityDisplayName = (provinceCode, cityCode) => {
+  const cityName = getCityName(provinceCode, cityCode);
+  if (MUNICIPALITY_CODES.has(provinceCode) && DIRECT_COUNTY_NAMES.has(cityName)) {
+    return getProvinceName(provinceCode);
+  }
+  return cityName;
+};
+
+const shouldIncludeCityName = (provinceCode, cityCode) => {
+  const cityName = getCityName(provinceCode, cityCode);
+  return !DIRECT_COUNTY_NAMES.has(cityName);
+};
+
+const syncCityList = () => {
+  cityList.value = buildOptions(getCityMap(address.province), (code) =>
+    getCityDisplayName(address.province, code),
+  );
+};
+
+const syncAreaList = () => {
+  areaList.value = buildOptions(getAreaMap(address.city));
+};
+
+const inferRegionFromAddress = (fullAddress = '') => {
+  for (const [provinceCode, provinceName] of Object.entries(regionMap[ROOT_REGION_CODE] || {})) {
+    if (!fullAddress.includes(provinceName)) continue;
+
+    for (const [cityCode, rawCityName] of Object.entries(getCityMap(provinceCode))) {
+      const cityInAddress = shouldIncludeCityName(provinceCode, cityCode) ? rawCityName : '';
+      if (cityInAddress && !fullAddress.includes(cityInAddress)) continue;
+
+      for (const [areaCode, areaName] of Object.entries(getAreaMap(cityCode))) {
+        if (!fullAddress.includes(areaName)) continue;
+
+        const regionText = `${provinceName}${cityInAddress}${areaName}`;
+        return {
+          province: provinceCode,
+          city: cityCode,
+          area: areaCode,
+          detail: fullAddress.replace(regionText, '').trim(),
+        };
+      }
     }
   }
-});
 
-// 省份切换事件
-const handleProvinceChange = () => {
-  if (address.province) {
-    cityList.value = regionData[address.province] || [];
-    address.city = '';
-    address.area = '';
-    areaList.value = [];
-  }
+  return {
+    province: '',
+    city: '',
+    area: '',
+    detail: fullAddress,
+  };
 };
 
-// 城市切换事件
-const handleCityChange = () => {
-  if (address.city) {
-    areaList.value = regionData[address.city] || [];
-    address.area = '';
-  }
+const fillAddressForm = (res) => {
+  address.id = res.id;
+  address.name = res.name || '';
+  address.phone = res.phone_number || '';
+  address.isDefault = Boolean(res.is_default);
+
+  const parsed = inferRegionFromAddress(res.address || '');
+  address.province = parsed.province;
+  syncCityList();
+  address.city = parsed.city;
+  syncAreaList();
+  address.area = parsed.area;
+  address.detail = parsed.detail;
 };
 
-// 保存地址
-const saveAddress = async () => {
-  // 表单验证
-  if (!address.name) {
-    ElMessage.warning('请输入收货人姓名！');
-    return;
-  }
-  if (!/^1[3-9]\d{9}$/.test(address.phone)) {
-    ElMessage.warning('请输入正确的手机号！');
-    return;
-  }
-  if (!address.province || !address.city || !address.area) {
-    ElMessage.warning('请选择完整的省市区！');
-    return;
-  }
-  if (!address.detail) {
-    ElMessage.warning('请输入详细地址！');
-    return;
-  }
+onMounted(async () => {
+  if (!addressId) return;
 
   loading.value = true;
+  try {
+    let res;
+    try {
+      res = await addressApi.getAddressDetail(addressId);
+    } catch {
+      const addresses = await addressApi.getAddresses();
+      res = addresses.find((item) => String(item.id) === String(addressId));
+    }
 
-   try {
+    if (!res) {
+      throw new Error('地址不存在');
+    }
+
+    fillAddressForm(res);
+  } catch (err) {
+    ElMessage.error(err?.message || '获取地址详情失败');
+  } finally {
+    loading.value = false;
+  }
+});
+
+const handleProvinceChange = () => {
+  syncCityList();
+  address.city = '';
+  address.area = '';
+  areaList.value = [];
+};
+
+const handleCityChange = () => {
+  syncAreaList();
+  address.area = '';
+};
+
+const buildRedirectLocation = (redirect) => {
+  const [path, queryString = ''] = String(redirect || '').split('?');
+  const query = Object.fromEntries(new URLSearchParams(queryString).entries());
+  return {
+    path: path || '/checkout',
+    query: { ...query, _t: Date.now() },
+  };
+};
+
+const saveAddress = async () => {
+  if (!address.name.trim()) {
+    ElMessage.warning('请输入收货人姓名');
+    return;
+  }
+
+  if (!/^1[3-9]\d{9}$/.test(address.phone)) {
+    ElMessage.warning('请输入正确的手机号');
+    return;
+  }
+
+  if (!address.province || !address.city || !address.area) {
+    ElMessage.warning('请选择完整的省市区');
+    return;
+  }
+
+  if (!address.detail.trim()) {
+    ElMessage.warning('请输入详细地址');
+    return;
+  }
+
+  const provinceName = getProvinceName(address.province);
+  const cityName = shouldIncludeCityName(address.province, address.city)
+    ? getCityName(address.province, address.city)
+    : '';
+  const areaName = getAreaName(address.city, address.area);
+  const payload = {
+    name: address.name.trim(),
+    phone_number: address.phone.trim(),
+    address: `${provinceName}${cityName}${areaName}${address.detail.trim()}`,
+    is_default: address.isDefault,
+  };
+
+  loading.value = true;
+  try {
     if (addressId) {
       await addressApi.updateAddress(addressId, payload);
     } else {
       await addressApi.createAddress(payload);
     }
+
     ElMessage.success(addressId ? '地址修改成功' : '地址添加成功');
-    const redirect = route.query.redirect || '/addresses';
-    if (redirect === '/checkout') {
-      // 返回确认页并添加时间戳参数，触发刷新
-      router.push({ path: redirect, query: { _t: Date.now() } });
-    } else {
-      router.push(redirect);
-    }
+
+    const redirect = route.query.redirect || '/checkout';
+    router.push(buildRedirectLocation(redirect));
   } catch (err) {
-    ElMessage.error('保存失败：' + err.message);
+    ElMessage.error(err?.message || '保存失败');
+  } finally {
+    loading.value = false;
   }
 };
 
-// 返回上一页
 const goBack = () => {
   router.go(-1);
 };
 </script>
 
 <style scoped>
-/* 全局容器 */
+/* 页面容器样式 */
 .address-edit-container {
   width: 100vw;
   min-height: 100vh;
@@ -251,7 +323,7 @@ const goBack = () => {
   box-sizing: border-box;
 }
 
-/* 顶部导航 */
+/* 顶部导航栏 */
 .header {
   display: flex;
   align-items: center;
@@ -287,7 +359,7 @@ const goBack = () => {
   cursor: pointer;
 }
 
-/* 表单容器 */
+/* 表单容器样式 */
 .address-form {
   padding: 15px;
   background-color: #fff;
@@ -296,7 +368,7 @@ const goBack = () => {
   box-shadow: 0 2px 8px rgba(255, 192, 203, 0.1);
 }
 
-/* 表单项 */
+/* 表单项样式 */
 .form-item {
   display: flex;
   flex-direction: column;
@@ -320,7 +392,7 @@ const goBack = () => {
   border-color: #ff69b4;
 }
 
-/* 省市区选择 */
+/* 地区选择区域样式 */
 .region-select {
   display: flex;
   gap: 8px;
@@ -337,7 +409,7 @@ const goBack = () => {
   border-color: #ff69b4;
 }
 
-/* 复选框项 */
+/* 默认地址复选框样式 */
 .checkbox-item {
   border-bottom: none;
 }
@@ -357,7 +429,7 @@ const goBack = () => {
   color: #333;
 }
 
-/* 底部操作栏 */
+/* 底部操作按钮区域 */
 .bottom-actions {
   position: fixed;
   bottom: 0;
@@ -394,7 +466,7 @@ const goBack = () => {
   background-color: #ff87b8;
 }
 
-/* 响应式适配 */
+/* 桌面端适配布局 */
 @media (min-width: 768px) {
   .address-form {
     width: 600px;

@@ -1,0 +1,10 @@
+.column-action_buttons,
+.field-action_buttons {
+  white-space: nowrap;
+  min-width: 260px;
+}
+
+.column-next_actions_preview,
+.field-next_actions_preview {
+  min-width: 180px;
+}

@@ -15,7 +15,7 @@
         <button class="nav-btn" @click="goToCart">🛒 购物车</button>
         <button class="nav-btn" @click="goToOrders">📋 订单</button>
 
-        <button class="nav-btn" @click="goToProfile">👤 我的</button>
+        <button class="nav-btn" @click="goToSupport">💬 客服</button>
         <img src="@/assets/hello-kitty.jpg" alt="用户头像" class="avatar">
          
       </div>
@@ -62,7 +62,7 @@
 
         <div class="cart-item" v-for="item in cartItems" :key="item.id">
           <div class="col-select">
-            <input type="checkbox" v-model="item.selected" class="checkbox" @change="handleToggleCheck(item.id)" />
+            <input type="checkbox" :checked="item.selected" class="checkbox" @change="handleToggleCheck(item.id, $event.target.checked)" />
           </div>
           <div class="col-info">
             <img :src="item.image || defaultImage" :alt="item.name" class="product-img" />
@@ -105,7 +105,7 @@ import { ref, computed, onMounted } from 'vue';
 import { useRouter } from 'vue-router';
 import { storeToRefs } from 'pinia';
 import { useCartStore } from '@/store/cartStore';
-import { ElMessage } from 'element-plus'; // 如果你使用了 Element Plus
+import { ElMessage, ElMessageBox } from 'element-plus'; // 如果你使用了 Element Plus
 
 const router = useRouter();
 const cartStore = useCartStore();
@@ -125,8 +125,8 @@ onMounted(() => {
 });
 
 // 处理勾选切换
-const handleToggleCheck = (id) => {
-  cartStore.toggleCheck(id);
+const handleToggleCheck = (id, selected) => {
+  cartStore.toggleCheck(id, selected);
 };
 
 // 增加数量
@@ -141,7 +141,7 @@ const handleDecrease = (item) => {
 
 // 删除商品
 const handleRemove = (id) => {
-  ElMessage.confirm('确定要删除该商品吗？', '提示', {
+  ElMessageBox.confirm('确定要删除该商品吗？', '提示', {
     confirmButtonText: '确定',
     cancelButtonText: '取消',
     type: 'warning',
@@ -152,7 +152,7 @@ const handleRemove = (id) => {
 
 // 清空购物车
 const handleClearCart = () => {
-  ElMessage.confirm('确定要清空购物车吗？', '提示', {
+  ElMessageBox.confirm('确定要清空购物车吗？', '提示', {
     confirmButtonText: '确定',
     cancelButtonText: '取消',
     type: 'warning',
@@ -207,7 +207,7 @@ const goToCheckout = () => {
 const goToHome = () => router.push('/home');
 const goToCart = () => router.push('/cart');
 const goToOrders = () => router.push('/orders');
-const goToProfile = () => router.push('/profile');
+const goToSupport = () => router.push({ name: 'Support' });
 </script>
 
 <style scoped>

@@ -18,8 +18,12 @@ class Order(models.Model):
     user = models.ForeignKey(User, on_delete=models.CASCADE, related_name="orders")
     address = models.ForeignKey(Address, on_delete=models.CASCADE, related_name="orders")
     status = models.CharField(max_length=20, choices=STATUS_CHOICES, default="pending_payment")
-    created_at = models.DateTimeField(auto_now_add=True)
-    updated_at = models.DateTimeField(auto_now=True)
+    aftersale_used = models.BooleanField("是否已申请过售后", default=False)
+    express_company = models.CharField("物流公司", max_length=50, blank=True, default="")
+    express_no = models.CharField("物流单号", max_length=64, blank=True, default="")
+    shipped_at = models.DateTimeField("发货时间", null=True, blank=True)
+    created_at = models.DateTimeField("创建时间", auto_now_add=True)
+    updated_at = models.DateTimeField("更新时间", auto_now=True)
 
     STATUS_TRANSITIONS = {
         "pending_payment": ["pending_shipment", "cancelled"],
@@ -32,6 +36,10 @@ class Order(models.Model):
 
     def __str__(self):
         return f"订单 {self.id} - {self.status}"
+
+    class Meta:
+        verbose_name = "订单"
+        verbose_name_plural = "订单"
 
     def change_status(self, new_status):
         if self.status == "cancelled":
@@ -48,10 +56,14 @@ class Order(models.Model):
 
 
 class OrderItem(models.Model):
-    order = models.ForeignKey(Order, on_delete=models.CASCADE, related_name="order_items")
-    product = models.ForeignKey(Product, on_delete=models.CASCADE)
-    quantity = models.PositiveIntegerField(default=1)
-    price = models.DecimalField(max_digits=10, decimal_places=2)
+    order = models.ForeignKey(Order, on_delete=models.CASCADE, related_name="order_items", verbose_name="订单")
+    product = models.ForeignKey(Product, on_delete=models.CASCADE, verbose_name="商品")
+    quantity = models.PositiveIntegerField(default=1, verbose_name="数量")
+    price = models.DecimalField(max_digits=10, decimal_places=2, verbose_name="成交价")
 
     def __str__(self):
         return f"{self.product.name} - {self.quantity}"
+
+    class Meta:
+        verbose_name = "订单明细"
+        verbose_name_plural = "订单明细"

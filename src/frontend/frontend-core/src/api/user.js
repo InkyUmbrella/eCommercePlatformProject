@@ -7,6 +7,7 @@ export const register = (data) => {
     url: '/users/register/',
     method: 'POST',
     data,
+    skipAuth: true,
   });
 };
 
@@ -16,6 +17,7 @@ export const login = (data) => {
     url: '/users/login/',
     method: 'POST',
     data,
+    skipAuth: true,
   });
 };
 
@@ -25,6 +27,7 @@ export const refreshToken = (refresh) => {
     url: '/users/refresh/',
     method: 'POST',
     data: { refresh },
+    skipAuth: true,
   });
 };
 

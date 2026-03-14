@@ -98,11 +98,11 @@ export const useCartStore = defineStore('cart', () => {
   };
 
   // 切换勾选状态
-  const toggleCheck = async (itemId) => {
+  const toggleCheck = async (itemId, selected) => {
     const item = cartItems.value.find(i => i.id === itemId);
     if (!item) return;
 
-    const newSelected = !item.selected;
+    const newSelected = typeof selected === 'boolean' ? selected : !item.selected;
     const oldSelected = item.selected;
     item.selected = newSelected;
 
